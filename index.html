@@ -943,9 +943,42 @@
     return manual.concat(routineEvs).concat(birthdayEvs);
   }
 
+  // --- 儲存介面：優先使用 Claude 的雲端儲存（window.storage）；
+  //     若不存在（例如把檔案下載後直接用瀏覽器開啟），自動改用瀏覽器的 localStorage，
+  //     確保資料不會因為環境不同而消失。 ---
+  const dataStore = {
+    async get(key){
+      if(typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
+        try{
+          return await window.storage.get(key, false);
+        } catch(e){ /* 若雲端儲存呼叫失敗，改走 localStorage */ }
+      }
+      try{
+        const raw = window.localStorage.getItem(key);
+        if(raw === null) return null;
+        return { key, value: raw, shared: false };
+      } catch(e){
+        return null;
+      }
+    },
+    async set(key, value){
+      if(typeof window.storage !== 'undefined' && window.storage && typeof window.storage.set === 'function'){
+        try{
+          return await window.storage.set(key, value, false);
+        } catch(e){ /* 若雲端儲存呼叫失敗，改走 localStorage */ }
+      }
+      try{
+        window.localStorage.setItem(key, value);
+        return { key, value, shared: false };
+      } catch(e){
+        return null;
+      }
+    }
+  };
+
   async function loadEvents(){
     try{
-      const res = await window.storage.get(STORAGE_KEY, false);
+      const res = await dataStore.get(STORAGE_KEY);
       if(res && res.value){
         events = JSON.parse(res.value);
       } else {
@@ -961,7 +994,7 @@
 
   async function saveEvents(){
     try{
-      await window.storage.set(STORAGE_KEY, JSON.stringify(events), false);
+      await dataStore.set(STORAGE_KEY, JSON.stringify(events));
     } catch(e){
       setStatus('儲存失敗，請稍後再試');
     }
@@ -969,7 +1002,7 @@
 
   async function loadRoutines(){
     try{
-      const res = await window.storage.get(ROUTINE_STORAGE_KEY, false);
+      const res = await dataStore.get(ROUTINE_STORAGE_KEY);
       if(res && res.value){
         routines = JSON.parse(res.value);
       } else {
@@ -982,7 +1015,7 @@
 
   async function saveRoutines(){
     try{
-      await window.storage.set(ROUTINE_STORAGE_KEY, JSON.stringify(routines), false);
+      await dataStore.set(ROUTINE_STORAGE_KEY, JSON.stringify(routines));
     } catch(e){
       setStatus('儲存失敗，請稍後再試');
     }
@@ -990,7 +1023,7 @@
 
   async function loadBirthdays(){
     try{
-      const res = await window.storage.get(BIRTHDAY_STORAGE_KEY, false);
+      const res = await dataStore.get(BIRTHDAY_STORAGE_KEY);
       if(res && res.value){
         birthdays = JSON.parse(res.value);
       } else {
@@ -1003,7 +1036,7 @@
 
   async function saveBirthdays(){
     try{
-      await window.storage.set(BIRTHDAY_STORAGE_KEY, JSON.stringify(birthdays), false);
+      await dataStore.set(BIRTHDAY_STORAGE_KEY, JSON.stringify(birthdays));
     } catch(e){
       setBirthdayStatus('儲存失敗，請稍後再試');
     }
