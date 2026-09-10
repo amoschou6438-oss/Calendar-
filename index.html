@@ -190,7 +190,7 @@
     white-space: nowrap;
   }
   @media (max-width: 400px){
-    .holiday-name{ display:none; }
+    .holiday-name{ font-size: 7.5px; }
   }
 
   .chip{
@@ -358,18 +358,10 @@
     .modal{ padding: 16px; }
   }
   @media (max-width: 400px){
-    .cell{ min-height: 40px; }
-    .chip{ display: none; }
-    .cell.has-events::after{
-      content:'';
-      position:absolute;
-      bottom: 3px; left:50%;
-      transform: translateX(-50%);
-      width:4px; height:4px;
-      border-radius:50%;
-      background: var(--gold);
-    }
-    .cell.has-events.has-red::after{ background: var(--red); }
+    .cell{ min-height: 58px; padding: 3px 2px; }
+    .cell .date{ font-size: 10px; }
+    .chip{ font-size: 8px; padding: 1px 2px; margin-top: 1px; border-left-width: 1px; }
+    .chip.more{ font-size: 7.5px; }
   }
 
   /* --- 例行事項 --- */
