@@ -546,8 +546,8 @@
     <div class="legend">
       <span><i class="dot gold"></i>例行班務</span>
       <span><i class="dot red"></i>重要事項</span>
-      <span><i class="dot birthday"></i>生日</span>
-      <span>&#8635; 自動產生的例行事項／生日</span>
+      <span><i class="dot birthday"></i>🎂生日</span>
+      <span>&#8635; 自動產生的例行事項</span>
       <span style="color:var(--red);">國 台灣國定假日</span>
     </div>
   </div>
@@ -561,11 +561,11 @@
     <div class="nav-left">
       <select id="yearSelect"></select>
       <select id="monthSelect"></select>
-      <button class="today-btn" id="todayBtn">回到今天</button>
-      <button class="routine-btn" id="openRoutineBtn">&#8635; 例行事項</button>
-      <button class="routine-btn" id="openBirthdayBtn">&#8635; 生日</button>
-      <button class="routine-btn" id="exportBackupBtn">備份</button>
-      <button class="routine-btn" id="openRestoreBtn">回復</button>
+      <button class="today-btn" id="todayBtn">↩️ 回到今天</button>
+      <button class="routine-btn" id="openRoutineBtn">🗓️ 例行事項</button>
+      <button class="routine-btn" id="openBirthdayBtn">🎂 生日</button>
+      <button class="routine-btn" id="exportBackupBtn">💾 備份</button>
+      <button class="routine-btn" id="openRestoreBtn">📀 回復</button>
     </div>
   </div>
 
@@ -601,7 +601,7 @@
       <div class="tag-choice">
         <label><input type="radio" name="tag" value="gold" checked> 例行班務</label>
         <label><input type="radio" name="tag" value="red"> 重要事項</label>
-        <label><input type="radio" name="tag" value="birthday"> 生日</label>
+        <label><input type="radio" name="tag" value="birthday"> 🎂 生日</label>
       </div>
       <div class="form-actions">
         <button class="btn cancel" id="cancelEditBtn">取消</button>
@@ -615,7 +615,7 @@
 <div class="modal-overlay" id="routineModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>例行事項</h2>
+      <h2>🗓️ 例行事項</h2>
       <button class="modal-close" id="routineModalClose">&times;</button>
     </div>
 
@@ -637,7 +637,6 @@
           <select id="routineTagInput">
             <option value="gold">例行班務</option>
             <option value="red">重要事項</option>
-            <option value="birthday">生日</option>
           </select>
         </div>
       </div>
@@ -687,14 +686,14 @@
 <div class="modal-overlay" id="birthdayModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>生日</h2>
+      <h2>🎂 生日</h2>
       <button class="modal-close" id="birthdayModalClose">&times;</button>
     </div>
 
     <div class="routine-list" id="birthdayList"></div>
 
     <div class="form" id="birthdayFormArea" style="margin-top:0; border-top:1px solid var(--panel-line); padding-top:14px;">
-      <div id="birthdayFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增生日</div>
+      <div id="birthdayFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">🎂 新增生日</div>
 
       <label>姓名</label>
       <input type="text" id="birthdayNameInput" placeholder="例如：陳小美">
@@ -725,7 +724,7 @@
 <div class="modal-overlay" id="restoreModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>回復備份</h2>
+      <h2>📀 回復備份</h2>
       <button class="modal-close" id="restoreModalClose">&times;</button>
     </div>
     <div class="form" style="margin-top:0; border-top:none; padding-top:0;">
@@ -922,7 +921,7 @@
       if(!result[key]) result[key] = [];
       result[key].push({
         id: 'birthday-'+b.id+'-'+key,
-        title: b.name + ' 生日',
+        title: '🎂' + b.name + '生日',
         time: '',
         tag: 'birthday',
         isBirthday: true,
@@ -1553,7 +1552,7 @@
       info.className = 'info';
       const t = document.createElement('div');
       t.className = 'title';
-      t.textContent = b.name;
+      t.textContent = '🎂' + b.name;
       info.appendChild(t);
       const d = document.createElement('div');
       d.className = 'desc';
@@ -1586,7 +1585,7 @@
     populateBirthdayDayOptions();
     birthdayDaySelect.value = b.day;
     updateBirthdayAgePreview();
-    document.getElementById('birthdayFormTitleLabel').textContent = '編輯生日';
+    document.getElementById('birthdayFormTitleLabel').textContent = '🎂 編輯生日';
     document.getElementById('birthdaySaveBtn').textContent = '更新';
     document.getElementById('birthdayCancelEditBtn').style.display = 'block';
     document.getElementById('birthdayNameInput').focus();
@@ -1600,7 +1599,7 @@
     populateBirthdayDayOptions();
     birthdayDaySelect.value = today.getDate();
     updateBirthdayAgePreview();
-    document.getElementById('birthdayFormTitleLabel').textContent = '新增生日';
+    document.getElementById('birthdayFormTitleLabel').textContent = '🎂 新增生日';
     document.getElementById('birthdaySaveBtn').textContent = '新增';
     document.getElementById('birthdayCancelEditBtn').style.display = 'none';
   }
