@@ -18,6 +18,8 @@
     --gold: #c9a961;
     --gold-dim: #8f8055;
     --red: #a8483f;
+    --purple: #9b7fc7;
+    --purple-dim: #6f5a8c;
     --cream: #f0e9d8;
     --muted: #92a6a2;
     --weekend-tint: rgba(201,169,97,0.06);
@@ -65,11 +67,13 @@
     gap: 16px;
     font-size: 12px;
     color: var(--muted);
+    flex-wrap: wrap;
   }
   .legend span{ display:flex; align-items:center; gap:6px; }
   .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
   .dot.gold{ background: var(--gold); }
   .dot.red{ background: var(--red); }
+  .dot.birthday{ background: var(--purple); }
 
   .nav{
     display:flex;
@@ -222,6 +226,10 @@
     background: rgba(168,72,63,0.2);
     border-left: 2px solid var(--red);
   }
+  .chip.birthday{
+    background: rgba(155,127,199,0.2);
+    border-left: 2px solid var(--purple);
+  }
   @media (max-width: 480px){
     .day-row{ padding: 8px 10px; gap: 10px; }
     .date-block{ width: 42px; }
@@ -260,6 +268,7 @@
     font-size: 13px;
   }
   .event-item.red{ border-left-color: var(--red); }
+  .event-item.birthday{ border-left-color: var(--purple); }
   .event-item .info{ flex:1; }
   .event-item .info .title{ font-weight: 600; }
   .event-item .info .time{ color: var(--muted); font-size: 11.5px; margin-top:2px; }
@@ -305,9 +314,9 @@
     font-size: 13px;
   }
   .form input:focus, .form select:focus{ outline: 1px solid var(--gold); }
-  .tag-choice{ display:flex; gap:8px; }
+  .tag-choice{ display:flex; gap:8px; flex-wrap: wrap; }
   .tag-choice label{
-    flex:1;
+    flex: 1 1 100px;
     display:flex;
     align-items:center;
     gap:6px;
@@ -394,6 +403,35 @@
     margin-left: 6px;
     vertical-align: middle;
   }
+  .badge-birthday{
+    display:inline-block;
+    font-size: 10px;
+    color: var(--purple);
+    border: 1px solid var(--purple-dim);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .toast{
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel-2);
+    border: 1px solid var(--gold-dim);
+    color: var(--cream);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show{ opacity: 1; }
 
   .modal-overlay{
     display:none;
@@ -447,6 +485,7 @@
     font-size: 13px;
   }
   .routine-item.red{ border-left-color: var(--red); }
+  .routine-item.birthday{ border-left-color: var(--purple); }
   .routine-item .info .title{ font-weight: 600; }
   .routine-item .info .desc{ color: var(--muted); font-size: 11.5px; margin-top:3px; }
   .routine-item .actions{ display:flex; gap:6px; flex-shrink:0; }
@@ -507,7 +546,8 @@
     <div class="legend">
       <span><i class="dot gold"></i>例行班務</span>
       <span><i class="dot red"></i>重要事項</span>
-      <span>&#8635; 自動產生的例行事項</span>
+      <span><i class="dot birthday"></i>生日</span>
+      <span>&#8635; 自動產生的例行事項／生日</span>
       <span style="color:var(--red);">國 台灣國定假日</span>
     </div>
   </div>
@@ -523,6 +563,9 @@
       <select id="monthSelect"></select>
       <button class="today-btn" id="todayBtn">回到今天</button>
       <button class="routine-btn" id="openRoutineBtn">&#8635; 例行事項</button>
+      <button class="routine-btn" id="openBirthdayBtn">&#8635; 生日</button>
+      <button class="routine-btn" id="exportBackupBtn">備份</button>
+      <button class="routine-btn" id="openRestoreBtn">回復</button>
     </div>
   </div>
 
@@ -558,6 +601,7 @@
       <div class="tag-choice">
         <label><input type="radio" name="tag" value="gold" checked> 例行班務</label>
         <label><input type="radio" name="tag" value="red"> 重要事項</label>
+        <label><input type="radio" name="tag" value="birthday"> 生日</label>
       </div>
       <div class="form-actions">
         <button class="btn cancel" id="cancelEditBtn">取消</button>
@@ -593,6 +637,7 @@
           <select id="routineTagInput">
             <option value="gold">例行班務</option>
             <option value="red">重要事項</option>
+            <option value="birthday">生日</option>
           </select>
         </div>
       </div>
@@ -639,10 +684,76 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="birthdayModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>生日</h2>
+      <button class="modal-close" id="birthdayModalClose">&times;</button>
+    </div>
+
+    <div class="routine-list" id="birthdayList"></div>
+
+    <div class="form" id="birthdayFormArea" style="margin-top:0; border-top:1px solid var(--panel-line); padding-top:14px;">
+      <div id="birthdayFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增生日</div>
+
+      <label>姓名</label>
+      <input type="text" id="birthdayNameInput" placeholder="例如：陳小美">
+
+      <label>出生日期（西元年／月／日，可直接輸入或用下拉選擇）</label>
+      <div class="inline-fields">
+        <div>
+          <select id="birthdayYearInput"></select>
+        </div>
+        <div>
+          <select id="birthdayMonthInput"></select>
+        </div>
+        <div>
+          <select id="birthdayDayInput"></select>
+        </div>
+      </div>
+      <div class="status" id="birthdayAgePreview" style="margin-top:6px;"></div>
+
+      <div class="form-actions">
+        <button class="btn cancel" id="birthdayCancelEditBtn" style="display:none;">取消編輯</button>
+        <button class="btn primary" id="birthdaySaveBtn">新增</button>
+      </div>
+      <div class="status" id="birthdayStatusMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="restoreModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>回復備份</h2>
+      <button class="modal-close" id="restoreModalClose">&times;</button>
+    </div>
+    <div class="form" style="margin-top:0; border-top:none; padding-top:0;">
+      <div style="font-size:12.5px; color:var(--muted); margin-bottom:10px; line-height:1.6;">
+        選擇先前匯出的備份檔案（.json）。回復後將覆蓋目前所有事項、例行事項與生日資料，請先確認再繼續。
+      </div>
+      <input type="file" id="restoreFileInput" accept="application/json,.json" style="display:none;">
+      <button class="btn" id="chooseRestoreFileBtn" style="width:100%;">選擇備份檔案…</button>
+
+      <div id="restorePreview" style="display:none; margin-top:14px; padding:12px; background:var(--panel-2); border:1px solid var(--panel-line); border-radius:6px;">
+        <div id="restorePreviewText" style="font-size:12.5px; margin-bottom:12px; line-height:1.6;"></div>
+        <div class="form-actions" style="margin-top:0;">
+          <button class="btn cancel" id="cancelRestoreBtn">取消</button>
+          <button class="btn primary" id="confirmRestoreBtn">確認回復（覆蓋目前資料）</button>
+        </div>
+      </div>
+      <div class="status" id="restoreStatusMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="globalToast"></div>
+
 <script>
 (function(){
   const STORAGE_KEY = 'calendar-events-v1';
   const ROUTINE_STORAGE_KEY = 'calendar-routines-v1';
+  const BIRTHDAY_STORAGE_KEY = 'calendar-birthdays-v1';
   const WEEKDAYS = ['日','一','二','三','四','五','六'];
   const ORDINAL_LABEL = {1:'第一', 2:'第二', 3:'第三', 4:'第四', 5:'第五', 'last':'最後一'};
 
@@ -743,12 +854,14 @@
 
   let events = {};
   let routines = [];
+  let birthdays = [];
   let today = new Date();
   let viewYear = today.getFullYear();
   let viewMonth = today.getMonth(); // 0-11
   let selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
   let editingId = null;
   let editingRoutineId = null;
+  let editingBirthdayId = null;
 
   function fmtKey(y,m,d){
     return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
@@ -789,13 +902,46 @@
     return result;
   }
 
-  // 取得某一天所有事項（手動 + 例行），需傳入年份與月份（0-11）以展開例行事項
+  function daysInMonthOf(year, month){
+    // month: 0-11
+    return new Date(year, month+1, 0).getDate();
+  }
+
+  // 展開某年某月（0-11）的所有生日，回傳 { 'YYYY-MM-DD': [event, ...] }
+  function computeBirthdayEventsForMonth(year, month){
+    const result = {};
+    const monthNum = month + 1;
+    birthdays.forEach(b=>{
+      if(Number(b.month) !== monthNum) return;
+      let day = Number(b.day);
+      const dim = daysInMonthOf(year, month);
+      if(day > dim) day = dim; // 例如 2/29 在非閏年顯示為 2/28
+      const key = fmtKey(year, month, day);
+      if(b.exceptions && b.exceptions.includes(key)) return;
+      const age = year - Number(b.year);
+      if(!result[key]) result[key] = [];
+      result[key].push({
+        id: 'birthday-'+b.id+'-'+key,
+        title: b.name + ' 生日',
+        time: '',
+        tag: 'birthday',
+        isBirthday: true,
+        birthdayId: b.id,
+        age: age
+      });
+    });
+    return result;
+  }
+
+  // 取得某一天所有事項（手動 + 例行 + 生日），需傳入年份與月份（0-11）以展開例行事項
   function getEventsForDate(year, month, day){
     const key = fmtKey(year, month, day);
     const manual = events[key] || [];
     const routineMap = computeRoutineEventsForMonth(year, month);
     const routineEvs = routineMap[key] || [];
-    return manual.concat(routineEvs);
+    const birthdayMap = computeBirthdayEventsForMonth(year, month);
+    const birthdayEvs = birthdayMap[key] || [];
+    return manual.concat(routineEvs).concat(birthdayEvs);
   }
 
   async function loadEvents(){
@@ -840,6 +986,27 @@
       await window.storage.set(ROUTINE_STORAGE_KEY, JSON.stringify(routines), false);
     } catch(e){
       setStatus('儲存失敗，請稍後再試');
+    }
+  }
+
+  async function loadBirthdays(){
+    try{
+      const res = await window.storage.get(BIRTHDAY_STORAGE_KEY, false);
+      if(res && res.value){
+        birthdays = JSON.parse(res.value);
+      } else {
+        birthdays = [];
+      }
+    } catch(e){
+      birthdays = [];
+    }
+  }
+
+  async function saveBirthdays(){
+    try{
+      await window.storage.set(BIRTHDAY_STORAGE_KEY, JSON.stringify(birthdays), false);
+    } catch(e){
+      setBirthdayStatus('儲存失敗，請稍後再試');
     }
   }
 
@@ -909,8 +1076,9 @@
 
       dayEvents.forEach(ev=>{
         const chip = document.createElement('span');
-        chip.className = 'chip' + (ev.tag==='red' ? ' red':'') + (ev.isRoutine ? ' routine':'');
-        chip.textContent = ev.title + (ev.time ? ' '+ev.time : '');
+        chip.className = 'chip' + (ev.tag==='red' ? ' red':'') + (ev.tag==='birthday' ? ' birthday':'') + (ev.isRoutine ? ' routine':'');
+        const ageSuffix = (ev.isBirthday && typeof ev.age === 'number') ? '（'+ev.age+'歲）' : '';
+        chip.textContent = ev.title + ageSuffix + (ev.time ? ' '+ev.time : '');
         eventsWrap.appendChild(chip);
       });
 
@@ -955,7 +1123,7 @@
 
     dayEvents.forEach(ev=>{
       const item = document.createElement('div');
-      item.className = 'event-item' + (ev.tag==='red' ? ' red':'');
+      item.className = 'event-item' + (ev.tag==='red' ? ' red':'') + (ev.tag==='birthday' ? ' birthday':'');
 
       const info = document.createElement('div');
       info.className = 'info';
@@ -966,6 +1134,12 @@
         const badge = document.createElement('span');
         badge.className = 'badge-routine';
         badge.textContent = '例行';
+        t.appendChild(badge);
+      }
+      if(ev.isBirthday){
+        const badge = document.createElement('span');
+        badge.className = 'badge-birthday';
+        badge.textContent = (typeof ev.age === 'number' ? ev.age+'歲' : '生日');
         t.appendChild(badge);
       }
       info.appendChild(t);
@@ -986,6 +1160,15 @@
         const manageBtn = document.createElement('button');
         manageBtn.textContent = '管理規則';
         manageBtn.addEventListener('click', ()=> openRoutineModal(ev.routineId));
+        actions.appendChild(skipBtn);
+        actions.appendChild(manageBtn);
+      } else if(ev.isBirthday){
+        const skipBtn = document.createElement('button');
+        skipBtn.textContent = '略過此次';
+        skipBtn.addEventListener('click', ()=> skipBirthdayOccurrence(ev.birthdayId, selectedKey));
+        const manageBtn = document.createElement('button');
+        manageBtn.textContent = '管理';
+        manageBtn.addEventListener('click', ()=> openBirthdayModal(ev.birthdayId));
         actions.appendChild(skipBtn);
         actions.appendChild(manageBtn);
       } else {
@@ -1294,7 +1477,322 @@
     if(el) el.scrollIntoView({ block: 'center' });
   }
 
-  loadRoutines().then(()=> loadEvents()).then(()=>{ renderPanel(); scrollToToday(); });
+  // --- 生日：西元年／月／日下拉選單建立 ---
+  const birthdayYearSelect = document.getElementById('birthdayYearInput');
+  const birthdayMonthSelect = document.getElementById('birthdayMonthInput');
+  const birthdayDaySelect = document.getElementById('birthdayDayInput');
+
+  function populateBirthdayYearOptions(){
+    birthdayYearSelect.innerHTML = '';
+    const curY = today.getFullYear();
+    for(let y = curY; y >= curY - 120; y--){
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y + '年';
+      birthdayYearSelect.appendChild(opt);
+    }
+  }
+  function populateBirthdayMonthOptions(){
+    birthdayMonthSelect.innerHTML = '';
+    for(let m=1; m<=12; m++){
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m + '月';
+      birthdayMonthSelect.appendChild(opt);
+    }
+  }
+  function populateBirthdayDayOptions(){
+    const y = Number(birthdayYearSelect.value) || today.getFullYear();
+    const m = Number(birthdayMonthSelect.value) || 1;
+    const dim = new Date(y, m, 0).getDate();
+    const prevVal = Number(birthdayDaySelect.value) || 1;
+    birthdayDaySelect.innerHTML = '';
+    for(let d=1; d<=dim; d++){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d + '日';
+      birthdayDaySelect.appendChild(opt);
+    }
+    birthdayDaySelect.value = Math.min(prevVal, dim);
+  }
+  populateBirthdayYearOptions();
+  populateBirthdayMonthOptions();
+  populateBirthdayDayOptions();
+
+  function updateBirthdayAgePreview(){
+    const y = Number(birthdayYearSelect.value);
+    const el = document.getElementById('birthdayAgePreview');
+    if(!y){ el.textContent = ''; return; }
+    const age = today.getFullYear() - y;
+    el.textContent = '今年（' + today.getFullYear() + '年）滿 ' + age + ' 歲';
+  }
+  birthdayYearSelect.addEventListener('change', ()=>{ populateBirthdayDayOptions(); updateBirthdayAgePreview(); });
+  birthdayMonthSelect.addEventListener('change', ()=>{ populateBirthdayDayOptions(); updateBirthdayAgePreview(); });
+  birthdayDaySelect.addEventListener('change', updateBirthdayAgePreview);
+
+  function describeBirthday(b){
+    const age = today.getFullYear() - Number(b.year);
+    return b.year + '年' + b.month + '月' + b.day + '日出生・今年滿 ' + age + ' 歲';
+  }
+
+  function renderBirthdayList(){
+    const list = document.getElementById('birthdayList');
+    list.innerHTML = '';
+    if(birthdays.length === 0){
+      const p = document.createElement('div');
+      p.className = 'empty-note small';
+      p.textContent = '目前沒有生日資料，請在下方新增（每年會依出生月日自動出現在日曆上，並自動計算年齡）。';
+      list.appendChild(p);
+    }
+    birthdays.slice().sort((a,b)=> (Number(a.month)-Number(b.month)) || (Number(a.day)-Number(b.day))).forEach(b=>{
+      const item = document.createElement('div');
+      item.className = 'routine-item birthday';
+      item.dataset.id = b.id;
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      const t = document.createElement('div');
+      t.className = 'title';
+      t.textContent = b.name;
+      info.appendChild(t);
+      const d = document.createElement('div');
+      d.className = 'desc';
+      d.textContent = describeBirthday(b);
+      info.appendChild(d);
+      item.appendChild(info);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '編輯';
+      editBtn.addEventListener('click', ()=> startEditBirthday(b));
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del';
+      delBtn.textContent = '刪除';
+      delBtn.addEventListener('click', ()=> deleteBirthday(b.id));
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      item.appendChild(actions);
+
+      list.appendChild(item);
+    });
+  }
+
+  function startEditBirthday(b){
+    editingBirthdayId = b.id;
+    document.getElementById('birthdayNameInput').value = b.name;
+    birthdayYearSelect.value = b.year;
+    birthdayMonthSelect.value = b.month;
+    populateBirthdayDayOptions();
+    birthdayDaySelect.value = b.day;
+    updateBirthdayAgePreview();
+    document.getElementById('birthdayFormTitleLabel').textContent = '編輯生日';
+    document.getElementById('birthdaySaveBtn').textContent = '更新';
+    document.getElementById('birthdayCancelEditBtn').style.display = 'block';
+    document.getElementById('birthdayNameInput').focus();
+  }
+
+  function resetBirthdayForm(){
+    editingBirthdayId = null;
+    document.getElementById('birthdayNameInput').value = '';
+    birthdayYearSelect.value = today.getFullYear();
+    birthdayMonthSelect.value = today.getMonth()+1;
+    populateBirthdayDayOptions();
+    birthdayDaySelect.value = today.getDate();
+    updateBirthdayAgePreview();
+    document.getElementById('birthdayFormTitleLabel').textContent = '新增生日';
+    document.getElementById('birthdaySaveBtn').textContent = '新增';
+    document.getElementById('birthdayCancelEditBtn').style.display = 'none';
+  }
+
+  function setBirthdayStatus(msg){
+    const el = document.getElementById('birthdayStatusMsg');
+    el.textContent = msg;
+    if(msg) setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 2500);
+  }
+
+  async function saveBirthdayForm(){
+    const name = document.getElementById('birthdayNameInput').value.trim();
+    if(!name){ setBirthdayStatus('請輸入姓名'); return; }
+    const year = Number(birthdayYearSelect.value);
+    const month = Number(birthdayMonthSelect.value);
+    const day = Number(birthdayDaySelect.value);
+    if(!year || !month || !day){ setBirthdayStatus('請選擇完整的出生日期'); return; }
+
+    if(editingBirthdayId){
+      const idx = birthdays.findIndex(b=>b.id===editingBirthdayId);
+      if(idx>-1){
+        const prev = birthdays[idx];
+        birthdays[idx] = {id: editingBirthdayId, name, year, month, day, tag:'birthday', exceptions: prev.exceptions || []};
+      }
+      setBirthdayStatus('已更新');
+    } else {
+      birthdays.push({id: 'b'+Date.now()+Math.floor(Math.random()*1000), name, year, month, day, tag:'birthday', exceptions: []});
+      setBirthdayStatus('已新增');
+    }
+    await saveBirthdays();
+    resetBirthdayForm();
+    renderBirthdayList();
+    render();
+    renderPanel();
+  }
+
+  async function deleteBirthday(id){
+    birthdays = birthdays.filter(b=>b.id!==id);
+    await saveBirthdays();
+    if(editingBirthdayId === id) resetBirthdayForm();
+    setBirthdayStatus('已刪除');
+    renderBirthdayList();
+    render();
+    renderPanel();
+  }
+
+  async function skipBirthdayOccurrence(birthdayId, dateKey){
+    const b = birthdays.find(b=>b.id===birthdayId);
+    if(!b) return;
+    if(!b.exceptions) b.exceptions = [];
+    if(!b.exceptions.includes(dateKey)) b.exceptions.push(dateKey);
+    await saveBirthdays();
+    setStatus('已略過這次');
+    render();
+    renderPanel();
+  }
+
+  function openBirthdayModal(highlightId){
+    renderBirthdayList();
+    if(highlightId){
+      const b = birthdays.find(b=>b.id===highlightId);
+      if(b) startEditBirthday(b);
+    } else {
+      resetBirthdayForm();
+    }
+    document.getElementById('birthdayModal').classList.add('open');
+  }
+  function closeBirthdayModal(){
+    document.getElementById('birthdayModal').classList.remove('open');
+    resetBirthdayForm();
+  }
+
+  document.getElementById('openBirthdayBtn').addEventListener('click', ()=> openBirthdayModal());
+  document.getElementById('birthdayModalClose').addEventListener('click', closeBirthdayModal);
+  document.getElementById('birthdayModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'birthdayModal') closeBirthdayModal();
+  });
+  document.getElementById('birthdaySaveBtn').addEventListener('click', saveBirthdayForm);
+  document.getElementById('birthdayCancelEditBtn').addEventListener('click', ()=>{ resetBirthdayForm(); });
+
+  // --- 備份 / 回復 ---
+  function showToast(msg){
+    const el = document.getElementById('globalToast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> el.classList.remove('show'), 2500);
+  }
+
+  function exportBackup(){
+    try{
+      const payload = {
+        type: 'calendar-backup',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        events: events,
+        routines: routines,
+        birthdays: birthdays
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const now = new Date();
+      const stamp = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+      a.href = url;
+      a.download = '萬年曆備份-' + stamp + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=> URL.revokeObjectURL(url), 1000);
+      showToast('已匯出備份檔案');
+    } catch(e){
+      showToast('匯出失敗，請稍後再試');
+    }
+  }
+  document.getElementById('exportBackupBtn').addEventListener('click', exportBackup);
+
+  let pendingRestoreData = null;
+
+  function setRestoreStatus(msg){
+    const el = document.getElementById('restoreStatusMsg');
+    el.textContent = msg;
+    if(msg) setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 3000);
+  }
+
+  function openRestoreModal(){
+    pendingRestoreData = null;
+    document.getElementById('restorePreview').style.display = 'none';
+    document.getElementById('restoreFileInput').value = '';
+    setRestoreStatus('');
+    document.getElementById('restoreModal').classList.add('open');
+  }
+  function closeRestoreModal(){
+    document.getElementById('restoreModal').classList.remove('open');
+    pendingRestoreData = null;
+  }
+
+  document.getElementById('openRestoreBtn').addEventListener('click', openRestoreModal);
+  document.getElementById('restoreModalClose').addEventListener('click', closeRestoreModal);
+  document.getElementById('restoreModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'restoreModal') closeRestoreModal();
+  });
+  document.getElementById('chooseRestoreFileBtn').addEventListener('click', ()=>{
+    document.getElementById('restoreFileInput').click();
+  });
+  document.getElementById('cancelRestoreBtn').addEventListener('click', ()=>{
+    pendingRestoreData = null;
+    document.getElementById('restorePreview').style.display = 'none';
+    document.getElementById('restoreFileInput').value = '';
+  });
+
+  document.getElementById('restoreFileInput').addEventListener('change', (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(reader.result);
+        const evCount = data.events ? Object.values(data.events).reduce((sum, arr)=> sum + (Array.isArray(arr)?arr.length:0), 0) : 0;
+        const rtCount = Array.isArray(data.routines) ? data.routines.length : 0;
+        const bdCount = Array.isArray(data.birthdays) ? data.birthdays.length : 0;
+        pendingRestoreData = data;
+        document.getElementById('restorePreviewText').textContent =
+          '偵測到備份檔案：一般事項 ' + evCount + ' 筆、例行事項 ' + rtCount + ' 筆、生日 ' + bdCount + ' 筆。確認回復將覆蓋目前所有資料，此動作無法復原。';
+        document.getElementById('restorePreview').style.display = '';
+      } catch(err){
+        pendingRestoreData = null;
+        document.getElementById('restorePreview').style.display = 'none';
+        setRestoreStatus('檔案格式錯誤，無法讀取備份內容');
+      }
+    };
+    reader.onerror = () => setRestoreStatus('讀取檔案失敗，請稍後再試');
+    reader.readAsText(file);
+  });
+
+  document.getElementById('confirmRestoreBtn').addEventListener('click', async ()=>{
+    if(!pendingRestoreData) return;
+    events = (pendingRestoreData.events && typeof pendingRestoreData.events === 'object') ? pendingRestoreData.events : {};
+    routines = Array.isArray(pendingRestoreData.routines) ? pendingRestoreData.routines : [];
+    birthdays = Array.isArray(pendingRestoreData.birthdays) ? pendingRestoreData.birthdays : [];
+    await saveEvents();
+    await saveRoutines();
+    await saveBirthdays();
+    pendingRestoreData = null;
+    document.getElementById('restorePreview').style.display = 'none';
+    document.getElementById('restoreFileInput').value = '';
+    render();
+    renderPanel();
+    renderRoutineList();
+    renderBirthdayList();
+    closeRestoreModal();
+    showToast('已回復備份資料');
+  });
+
+  Promise.all([loadRoutines(), loadBirthdays()]).then(()=> loadEvents()).then(()=>{ renderPanel(); scrollToToday(); });
 })();
 </script>
 </body>
