@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>萬年曆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #182625;
+    --panel: #213533;
+    --panel-2: #26403d;
+    --panel-line: #33504c;
+    --gold: #c9a961;
+    --gold-dim: #8f8055;
+    --red: #a8483f;
+    --cream: #f0e9d8;
+    --muted: #92a6a2;
+    --weekend-tint: rgba(201,169,97,0.06);
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .wrap{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 40px 22px 80px;
+  }
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom: 1px solid var(--panel-line);
+    padding-bottom: 18px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .masthead h1{
+    font-family:'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: 30px;
+    letter-spacing: 2px;
+    margin: 0;
+  }
+  .masthead p{
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .legend{
+    display:flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend span{ display:flex; align-items:center; gap:6px; }
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .dot.gold{ background: var(--gold); }
+  .dot.red{ background: var(--red); }
+
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .nav-left{ display:flex; align-items:center; gap:10px; }
+  .month-title{
+    font-family:'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: 24px;
+    min-width: 150px;
+  }
+  .nav button{
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    color: var(--cream);
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .nav button:hover{ border-color: var(--gold); color: var(--gold); }
+  .nav select{
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    color: var(--cream);
+    padding: 7px 9px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .today-btn{
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .today-btn:hover{ background: rgba(201,169,97,0.1); }
+
+  .layout{
+    display:grid;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-top: 1px solid var(--panel-line);
+    border-left: 1px solid var(--panel-line);
+    background: var(--panel);
+  }
+  .weekday{
+    text-align:center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px 0;
+    border-right: 1px solid var(--panel-line);
+    border-bottom: 1px solid var(--panel-line);
+    background: rgba(255,255,255,0.02);
+  }
+  .weekday.weekend{ color: var(--gold-dim); }
+
+  .cell{
+    min-height: 78px;
+    border-right: 1px solid var(--panel-line);
+    border-bottom: 1px solid var(--panel-line);
+    padding: 6px 6px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .cell:hover{ background: rgba(201,169,97,0.08); }
+  .cell.blank{ background: rgba(0,0,0,0.15); cursor: default; }
+  .cell.blank:hover{ background: rgba(0,0,0,0.15); }
+  .cell.weekend:not(.blank){ background: var(--weekend-tint); }
+  .cell.selected{ outline: 2px solid var(--gold); outline-offset: -2px; }
+  .cell.is-today .date{
+    background: var(--gold);
+    color: var(--bg);
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-weight: 700;
+  }
+
+  .cell .date{
+    font-size: 12.5px;
+    color: var(--cream);
+    opacity: 0.85;
+  }
+
+  .chip{
+    display:block;
+    margin-top: 4px;
+    font-size: 10.5px;
+    line-height: 1.3;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: rgba(201,169,97,0.16);
+    border-left: 2px solid var(--gold);
+    color: var(--cream);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chip.red{
+    background: rgba(168,72,63,0.2);
+    border-left: 2px solid var(--red);
+  }
+  .chip.more{
+    color: var(--muted);
+    background: none;
+    border-left: none;
+    padding-left: 2px;
+  }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 8px;
+    padding: 18px;
+    position: sticky;
+    top: 20px;
+  }
+  .panel h2{
+    font-family:'Noto Serif TC', serif;
+    font-size: 17px;
+    margin: 0 0 4px;
+  }
+  .panel .weekday-label{
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .event-item{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border-left: 3px solid var(--gold);
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .event-item.red{ border-left-color: var(--red); }
+  .event-item .info{ flex:1; }
+  .event-item .info .title{ font-weight: 600; }
+  .event-item .info .time{ color: var(--muted); font-size: 11.5px; margin-top:2px; }
+  .event-item .actions{ display:flex; gap:6px; flex-shrink:0; }
+  .event-item .actions button{
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+  .event-item .actions button:hover{ color: var(--gold); }
+  .event-item .actions button.del:hover{ color: var(--red); }
+
+  .empty-note{
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-bottom: 14px;
+  }
+
+  .form{
+    margin-top: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--panel-line);
+  }
+  .form label{
+    display:block;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    margin-top: 10px;
+  }
+  .form label:first-child{ margin-top:0; }
+  .form input[type=text], .form select{
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    color: var(--cream);
+    padding: 8px 9px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .form input:focus, .form select:focus{ outline: 1px solid var(--gold); }
+  .tag-choice{ display:flex; gap:8px; }
+  .tag-choice label{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 12px;
+    cursor: pointer;
+    margin:0;
+  }
+  .tag-choice input{ accent-color: var(--gold); }
+
+  .form-actions{
+    display:flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .btn{
+    flex:1;
+    padding: 9px 0;
+    border-radius: 6px;
+    border: 1px solid var(--gold-dim);
+    background: transparent;
+    color: var(--gold);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn:hover{ background: rgba(201,169,97,0.12); }
+  .btn.primary{ background: var(--gold); color: var(--bg); font-weight: 600; border-color: var(--gold); }
+  .btn.primary:hover{ opacity: 0.9; }
+  .btn.cancel{ border-color: var(--panel-line); color: var(--muted); }
+
+  .status{
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 10px;
+    min-height: 14px;
+  }
+
+  @media (max-width: 720px){
+    .layout{ grid-template-columns: 1fr; }
+    .panel{ position: static; }
+    .cell{ min-height: 58px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1>萬 年 曆</h1>
+      <p>點選任一天即可新增、修改或刪除事項</p>
+    </div>
+    <div class="legend">
+      <span><i class="dot gold"></i>例行班務</span>
+      <span><i class="dot red"></i>重要事項</span>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-left">
+      <button id="prevBtn">&#8249;</button>
+      <div class="month-title" id="monthTitle"></div>
+      <button id="nextBtn">&#8250;</button>
+    </div>
+    <div class="nav-left">
+      <select id="yearSelect"></select>
+      <select id="monthSelect"></select>
+      <button class="today-btn" id="todayBtn">回到今天</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="grid" id="weekdayRow"></div>
+      <div class="grid" id="dayGrid"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="panelDate">—</h2>
+      <div class="weekday-label" id="panelWeekday"></div>
+
+      <div id="eventList"></div>
+
+      <div class="form" id="formArea">
+        <div id="formTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增事項</div>
+        <label>項目名稱</label>
+        <input type="text" id="titleInput" placeholder="例如：童蒙班">
+        <label>時間（選填）</label>
+        <input type="text" id="timeInput" placeholder="例如：10:00">
+        <label>類別</label>
+        <div class="tag-choice">
+          <label><input type="radio" name="tag" value="gold" checked> 例行班務</label>
+          <label><input type="radio" name="tag" value="red"> 重要事項</label>
+        </div>
+        <div class="form-actions">
+          <button class="btn cancel" id="cancelEditBtn" style="display:none;">取消編輯</button>
+          <button class="btn primary" id="saveBtn">新增</button>
+        </div>
+        <div class="status" id="statusMsg"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'calendar-events-v1';
+  const WEEKDAYS = ['日','一','二','三','四','五','六'];
+
+  const seedEvents = {
+    '2026-09-13': [{id:'s1', title:'祭拜理事', time:'10:00', tag:'red'}],
+    '2026-09-20': [{id:'s2', title:'童蒙班', time:'', tag:'gold'}],
+    '2026-09-26': [{id:'s3', title:'台北簽約', time:'', tag:'red'}],
+    '2026-09-27': [{id:'s4', title:'青少班', time:'', tag:'gold'}],
+    '2026-10-02': [{id:'s5', title:'童蒙班會議', time:'', tag:'gold'}],
+    '2026-10-03': [{id:'s6', title:'學人班', time:'08:00到', tag:'gold'}],
+    '2026-10-08': [{id:'s7', title:'青少班會議', time:'', tag:'gold'}],
+    '2026-10-31': [{id:'s8', title:'回報餐點', time:'', tag:'gold'}],
+    '2026-11-05': [{id:'s9', title:'戶外行前會議', time:'', tag:'gold'}],
+    '2026-11-07': [{id:'s10', title:'學人班', time:'08:00到', tag:'gold'}],
+    '2026-11-21': [{id:'s11', title:'戶外場佈', time:'', tag:'gold'}],
+    '2026-11-22': [{id:'s12', title:'戶外活動', time:'', tag:'red'}],
+    '2026-12-05': [{id:'s13', title:'學人班', time:'08:00到', tag:'gold'}]
+  };
+
+  let events = {};
+  let today = new Date();
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth(); // 0-11
+  let selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
+  let editingId = null;
+
+  function fmtKey(y,m,d){
+    return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  }
+
+  async function loadEvents(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      if(res && res.value){
+        events = JSON.parse(res.value);
+      } else {
+        events = seedEvents;
+        await saveEvents();
+      }
+    } catch(e){
+      events = seedEvents;
+      try { await saveEvents(); } catch(e2){ /* ignore */ }
+    }
+    render();
+  }
+
+  async function saveEvents(){
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(events), false);
+    } catch(e){
+      setStatus('儲存失敗，請稍後再試');
+    }
+  }
+
+  function setStatus(msg){
+    const el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    if(msg) setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 2500);
+  }
+
+  // --- populate year/month selects ---
+  const yearSelect = document.getElementById('yearSelect');
+  const monthSelect = document.getElementById('monthSelect');
+  for(let y = today.getFullYear()-10; y <= today.getFullYear()+15; y++){
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y + '年';
+    yearSelect.appendChild(opt);
+  }
+  for(let m=0; m<12; m++){
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = (m+1) + '月';
+    monthSelect.appendChild(opt);
+  }
+
+  function renderWeekdayRow(){
+    const row = document.getElementById('weekdayRow');
+    row.innerHTML = '';
+    WEEKDAYS.forEach((w,i)=>{
+      const d = document.createElement('div');
+      d.className = 'weekday' + (i===0||i===6 ? ' weekend':'');
+      d.textContent = w;
+      row.appendChild(d);
+    });
+  }
+
+  function render(){
+    document.getElementById('monthTitle').textContent = viewYear + '年 ' + (viewMonth+1) + '月';
+    yearSelect.value = viewYear;
+    monthSelect.value = viewMonth;
+    renderWeekdayRow();
+
+    const grid = document.getElementById('dayGrid');
+    grid.innerHTML = '';
+
+    const firstDow = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+
+    for(let i=0;i<firstDow;i++){
+      const c = document.createElement('div');
+      c.className = 'cell blank' + (i===0?' weekend':'');
+      grid.appendChild(c);
+    }
+
+    for(let d=1; d<=daysInMonth; d++){
+      const dow = new Date(viewYear, viewMonth, d).getDay();
+      const key = fmtKey(viewYear, viewMonth, d);
+      const isToday = (viewYear===today.getFullYear() && viewMonth===today.getMonth() && d===today.getDate());
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (dow===0||dow===6 ? ' weekend':'') + (isToday?' is-today':'') + (key===selectedKey?' selected':'');
+      cell.dataset.key = key;
+
+      const dateSpan = document.createElement('span');
+      dateSpan.className = 'date';
+      dateSpan.textContent = d;
+      cell.appendChild(dateSpan);
+
+      const dayEvents = events[key] || [];
+      const shown = dayEvents.slice(0,2);
+      shown.forEach(ev=>{
+        const chip = document.createElement('span');
+        chip.className = 'chip' + (ev.tag==='red' ? ' red':'');
+        chip.textContent = ev.title + (ev.time ? ' '+ev.time : '');
+        cell.appendChild(chip);
+      });
+      if(dayEvents.length > 2){
+        const more = document.createElement('span');
+        more.className = 'chip more';
+        more.textContent = '+' + (dayEvents.length-2) + ' 項';
+        cell.appendChild(more);
+      }
+
+      cell.addEventListener('click', ()=>{
+        selectedKey = key;
+        editingId = null;
+        render();
+        renderPanel();
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function renderPanel(){
+    const [y,m,d] = selectedKey.split('-').map(Number);
+    const dow = new Date(y, m-1, d).getDay();
+    document.getElementById('panelDate').textContent = y + '年 ' + m + '月 ' + d + '日';
+    document.getElementById('panelWeekday').textContent = '星期' + WEEKDAYS[dow];
+
+    const list = document.getElementById('eventList');
+    list.innerHTML = '';
+    const dayEvents = events[selectedKey] || [];
+
+    if(dayEvents.length === 0){
+      const p = document.createElement('div');
+      p.className = 'empty-note';
+      p.textContent = '這天還沒有安排事項。';
+      list.appendChild(p);
+    }
+
+    dayEvents.forEach(ev=>{
+      const item = document.createElement('div');
+      item.className = 'event-item' + (ev.tag==='red' ? ' red':'');
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      const t = document.createElement('div');
+      t.className = 'title';
+      t.textContent = ev.title;
+      info.appendChild(t);
+      if(ev.time){
+        const tm = document.createElement('div');
+        tm.className = 'time';
+        tm.textContent = ev.time;
+        info.appendChild(tm);
+      }
+      item.appendChild(info);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '編輯';
+      editBtn.addEventListener('click', ()=> startEdit(ev));
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del';
+      delBtn.textContent = '刪除';
+      delBtn.addEventListener('click', ()=> deleteEvent(ev.id));
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      item.appendChild(actions);
+
+      list.appendChild(item);
+    });
+
+    resetForm();
+  }
+
+  function startEdit(ev){
+    editingId = ev.id;
+    document.getElementById('titleInput').value = ev.title;
+    document.getElementById('timeInput').value = ev.time || '';
+    document.querySelector('input[name=tag][value="'+ev.tag+'"]').checked = true;
+    document.getElementById('formTitleLabel').textContent = '編輯事項';
+    document.getElementById('saveBtn').textContent = '更新';
+    document.getElementById('cancelEditBtn').style.display = 'block';
+  }
+
+  function resetForm(){
+    editingId = null;
+    document.getElementById('titleInput').value = '';
+    document.getElementById('timeInput').value = '';
+    document.querySelector('input[name=tag][value="gold"]').checked = true;
+    document.getElementById('formTitleLabel').textContent = '新增事項';
+    document.getElementById('saveBtn').textContent = '新增';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+  }
+
+  async function deleteEvent(id){
+    const list = events[selectedKey] || [];
+    events[selectedKey] = list.filter(e=>e.id!==id);
+    if(events[selectedKey].length===0) delete events[selectedKey];
+    await saveEvents();
+    setStatus('已刪除');
+    render();
+    renderPanel();
+  }
+
+  async function saveForm(){
+    const title = document.getElementById('titleInput').value.trim();
+    if(!title){ setStatus('請輸入項目名稱'); return; }
+    const time = document.getElementById('timeInput').value.trim();
+    const tag = document.querySelector('input[name=tag]:checked').value;
+
+    if(!events[selectedKey]) events[selectedKey] = [];
+
+    if(editingId){
+      const idx = events[selectedKey].findIndex(e=>e.id===editingId);
+      if(idx>-1){
+        events[selectedKey][idx] = {id: editingId, title, time, tag};
+      }
+      setStatus('已更新');
+    } else {
+      events[selectedKey].push({id: 'e'+Date.now()+Math.floor(Math.random()*1000), title, time, tag});
+      setStatus('已新增');
+    }
+    await saveEvents();
+    render();
+    renderPanel();
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', saveForm);
+  document.getElementById('cancelEditBtn').addEventListener('click', ()=>{ resetForm(); });
+
+  document.getElementById('prevBtn').addEventListener('click', ()=>{
+    viewMonth--;
+    if(viewMonth<0){ viewMonth=11; viewYear--; }
+    render();
+  });
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    viewMonth++;
+    if(viewMonth>11){ viewMonth=0; viewYear++; }
+    render();
+  });
+  document.getElementById('todayBtn').addEventListener('click', ()=>{
+    viewYear = today.getFullYear();
+    viewMonth = today.getMonth();
+    selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
+    render();
+    renderPanel();
+  });
+  yearSelect.addEventListener('change', ()=>{ viewYear = parseInt(yearSelect.value); render(); });
+  monthSelect.addEventListener('change', ()=>{ viewMonth = parseInt(monthSelect.value); render(); });
+
+  loadEvents().then(()=>{ renderPanel(); });
+})();
+</script>
+</body>
+</html>
