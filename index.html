@@ -531,33 +531,42 @@
     <div>
       <div class="day-list" id="dayGrid"></div>
     </div>
-
-    <div class="panel">
-      <h2 id="panelDate">—</h2>
-      <div class="weekday-label" id="panelWeekday"></div>
-
-      <div id="eventList"></div>
-
-      <div class="form" id="formArea">
-        <div id="formTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增事項</div>
-        <label>項目名稱</label>
-        <input type="text" id="titleInput" placeholder="例如：童蒙班">
-        <label>時間（選填）</label>
-        <input type="text" id="timeInput" placeholder="例如：10:00">
-        <label>類別</label>
-        <div class="tag-choice">
-          <label><input type="radio" name="tag" value="gold" checked> 例行班務</label>
-          <label><input type="radio" name="tag" value="red"> 重要事項</label>
-        </div>
-        <div class="form-actions">
-          <button class="btn cancel" id="cancelEditBtn" style="display:none;">取消編輯</button>
-          <button class="btn primary" id="saveBtn">新增</button>
-        </div>
-        <div class="status" id="statusMsg"></div>
-      </div>
-    </div>
   </div>
 
+</div>
+
+<div class="modal-overlay" id="dayModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="panelDate" style="margin-bottom:4px;">—</h2>
+        <div class="weekday-label" id="panelWeekday" style="margin-bottom:0;"></div>
+      </div>
+      <button class="modal-close" id="dayModalClose">&times;</button>
+    </div>
+
+    <div id="eventList"></div>
+
+    <button class="btn" id="addToggleBtn" style="width:100%; margin-top:10px;">＋ 新增事項</button>
+
+    <div class="form" id="formArea" style="display:none;">
+      <div id="formTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增事項</div>
+      <label>項目名稱</label>
+      <input type="text" id="titleInput" placeholder="例如：童蒙班">
+      <label>時間（選填）</label>
+      <input type="text" id="timeInput" placeholder="例如：10:00">
+      <label>類別</label>
+      <div class="tag-choice">
+        <label><input type="radio" name="tag" value="gold" checked> 例行班務</label>
+        <label><input type="radio" name="tag" value="red"> 重要事項</label>
+      </div>
+      <div class="form-actions">
+        <button class="btn cancel" id="cancelEditBtn">取消</button>
+        <button class="btn primary" id="saveBtn">新增</button>
+      </div>
+      <div class="status" id="statusMsg"></div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="routineModal">
@@ -920,6 +929,7 @@
         editingId = null;
         render();
         renderPanel();
+        openDayModal();
       });
 
       list.appendChild(row);
@@ -998,6 +1008,16 @@
     resetForm();
   }
 
+  function showForm(){
+    document.getElementById('formArea').style.display = '';
+    document.getElementById('addToggleBtn').style.display = 'none';
+  }
+
+  function hideForm(){
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('addToggleBtn').style.display = '';
+  }
+
   function startEdit(ev){
     editingId = ev.id;
     document.getElementById('titleInput').value = ev.title;
@@ -1005,7 +1025,7 @@
     document.querySelector('input[name=tag][value="'+ev.tag+'"]').checked = true;
     document.getElementById('formTitleLabel').textContent = '編輯事項';
     document.getElementById('saveBtn').textContent = '更新';
-    document.getElementById('cancelEditBtn').style.display = 'block';
+    showForm();
   }
 
   function resetForm(){
@@ -1015,7 +1035,7 @@
     document.querySelector('input[name=tag][value="gold"]').checked = true;
     document.getElementById('formTitleLabel').textContent = '新增事項';
     document.getElementById('saveBtn').textContent = '新增';
-    document.getElementById('cancelEditBtn').style.display = 'none';
+    hideForm();
   }
 
   async function deleteEvent(id){
@@ -1233,8 +1253,22 @@
   document.getElementById('routineSaveBtn').addEventListener('click', saveRoutineForm);
   document.getElementById('routineCancelEditBtn').addEventListener('click', ()=>{ resetRoutineForm(); });
 
+  function openDayModal(){
+    document.getElementById('dayModal').classList.add('open');
+  }
+  function closeDayModal(){
+    document.getElementById('dayModal').classList.remove('open');
+    resetForm();
+  }
+
+  document.getElementById('dayModalClose').addEventListener('click', closeDayModal);
+  document.getElementById('dayModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'dayModal') closeDayModal();
+  });
+
   document.getElementById('saveBtn').addEventListener('click', saveForm);
   document.getElementById('cancelEditBtn').addEventListener('click', ()=>{ resetForm(); });
+  document.getElementById('addToggleBtn').addEventListener('click', ()=>{ resetForm(); showForm(); });
 
   document.getElementById('prevBtn').addEventListener('click', ()=>{
     viewMonth--;
