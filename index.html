@@ -169,6 +169,29 @@
     color: var(--cream);
     opacity: 0.85;
   }
+  .cell.holiday .date{
+    color: var(--red);
+    opacity: 1;
+    font-weight: 700;
+  }
+  .cell.is-today.holiday .date{
+    background: var(--red);
+    color: var(--cream);
+  }
+  .holiday-name{
+    display:block;
+    font-size: 9.5px;
+    line-height: 1.2;
+    color: var(--red);
+    letter-spacing: 0.3px;
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 400px){
+    .holiday-name{ display:none; }
+  }
 
   .chip{
     display:block;
@@ -323,10 +346,16 @@
     .nav-left{ gap: 6px; }
     .nav select{ padding: 6px 6px; font-size: 12px; }
     .today-btn{ padding: 6px 10px; font-size: 12px; }
+    .routine-btn{ padding: 6px 10px; font-size: 12px; }
     .cell{ min-height: 48px; padding: 4px 3px; }
     .cell .date{ font-size: 11px; }
     .chip{ font-size: 9px; padding: 1px 3px; margin-top: 2px; }
     .weekday{ font-size: 10.5px; padding: 6px 0; }
+  }
+  @media (max-width: 480px){
+    .inline-fields{ flex-direction: column; }
+    .month-grid{ grid-template-columns: repeat(3, 1fr); }
+    .modal{ padding: 16px; }
   }
   @media (max-width: 400px){
     .cell{ min-height: 40px; }
@@ -342,6 +371,134 @@
     }
     .cell.has-events.has-red::after{ background: var(--red); }
   }
+
+  /* --- 例行事項 --- */
+  .routine-btn{
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .routine-btn:hover{ background: rgba(201,169,97,0.1); }
+
+  .chip.routine::before{ content:'\21BB '; opacity:0.75; }
+  .badge-routine{
+    display:inline-block;
+    font-size: 10px;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .modal-overlay{
+    display:none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,16,15,0.6);
+    z-index: 50;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 14px;
+    overflow-y: auto;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal{
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 10px;
+    max-width: 560px;
+    width: 100%;
+    padding: 22px;
+  }
+  .modal-header{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-bottom: 14px;
+  }
+  .modal-header h2{
+    font-family:'Noto Serif TC', serif;
+    font-size: 18px;
+    margin: 0;
+  }
+  .modal-close{
+    background:none; border:none; color:var(--muted);
+    font-size: 18px; cursor:pointer; line-height:1;
+    padding: 4px;
+  }
+  .modal-close:hover{ color: var(--gold); }
+
+  .routine-list{ margin-bottom: 18px; }
+  .routine-item{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: var(--panel-2);
+    border-left: 3px solid var(--gold);
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .routine-item.red{ border-left-color: var(--red); }
+  .routine-item .info .title{ font-weight: 600; }
+  .routine-item .info .desc{ color: var(--muted); font-size: 11.5px; margin-top:3px; }
+  .routine-item .actions{ display:flex; gap:6px; flex-shrink:0; }
+  .routine-item .actions button{
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 12px; padding: 2px 4px;
+  }
+  .routine-item .actions button:hover{ color: var(--gold); }
+  .routine-item .actions button.del:hover{ color: var(--red); }
+
+  .inline-fields{ display:flex; gap:8px; }
+  .inline-fields > div{ flex:1; }
+
+  .month-grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .month-grid label{
+    display:flex; align-items:center; gap:5px;
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    border-radius: 6px;
+    padding: 6px 7px;
+    font-size: 12px;
+    cursor: pointer;
+    margin:0;
+    color: var(--cream);
+  }
+  .month-grid input{ accent-color: var(--gold); }
+  .month-quick{
+    display:flex; gap:8px; margin: 8px 0 4px;
+  }
+  .month-quick button{
+    background:none;
+    border: 1px solid var(--panel-line);
+    color: var(--muted);
+    border-radius: 5px;
+    padding: 4px 9px;
+    font-size: 11.5px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .month-quick button:hover{ color: var(--gold); border-color: var(--gold-dim); }
+
+  .empty-note.small{ margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -355,6 +512,8 @@
     <div class="legend">
       <span><i class="dot gold"></i>例行班務</span>
       <span><i class="dot red"></i>重要事項</span>
+      <span>&#8635; 自動產生的例行事項</span>
+      <span style="color:var(--red);">國 台灣國定假日</span>
     </div>
   </div>
 
@@ -368,6 +527,7 @@
       <select id="yearSelect"></select>
       <select id="monthSelect"></select>
       <button class="today-btn" id="todayBtn">回到今天</button>
+      <button class="routine-btn" id="openRoutineBtn">&#8635; 例行事項</button>
     </div>
   </div>
 
@@ -405,10 +565,162 @@
 
 </div>
 
+<div class="modal-overlay" id="routineModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>例行事項</h2>
+      <button class="modal-close" id="routineModalClose">&times;</button>
+    </div>
+
+    <div class="routine-list" id="routineList"></div>
+
+    <div class="form" id="routineFormArea" style="margin-top:0; border-top:1px solid var(--panel-line); padding-top:14px;">
+      <div id="routineFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增例行事項</div>
+
+      <label>項目名稱</label>
+      <input type="text" id="routineTitleInput" placeholder="例如：青少班">
+
+      <div class="inline-fields">
+        <div>
+          <label>時間（選填）</label>
+          <input type="text" id="routineTimeInput" placeholder="例如：10:00">
+        </div>
+        <div>
+          <label>類別</label>
+          <select id="routineTagInput">
+            <option value="gold">例行班務</option>
+            <option value="red">重要事項</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="inline-fields">
+        <div>
+          <label>星期</label>
+          <select id="routineWeekdayInput">
+            <option value="0">星期日</option>
+            <option value="1">星期一</option>
+            <option value="2">星期二</option>
+            <option value="3">星期三</option>
+            <option value="4">星期四</option>
+            <option value="5">星期五</option>
+            <option value="6">星期六</option>
+          </select>
+        </div>
+        <div>
+          <label>第幾週</label>
+          <select id="routineOrdinalInput">
+            <option value="1">第一個</option>
+            <option value="2">第二個</option>
+            <option value="3">第三個</option>
+            <option value="4">第四個</option>
+            <option value="5">第五個</option>
+            <option value="last">最後一個</option>
+          </select>
+        </div>
+      </div>
+
+      <label>適用月份（沒有這個班的月份請取消勾選）</label>
+      <div class="month-quick">
+        <button type="button" id="monthAllBtn">全選</button>
+        <button type="button" id="monthNoneBtn">全不選</button>
+      </div>
+      <div class="month-grid" id="routineMonthGrid"></div>
+
+      <div class="form-actions">
+        <button class="btn cancel" id="routineCancelEditBtn" style="display:none;">取消編輯</button>
+        <button class="btn primary" id="routineSaveBtn">新增</button>
+      </div>
+      <div class="status" id="routineStatusMsg"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   const STORAGE_KEY = 'calendar-events-v1';
+  const ROUTINE_STORAGE_KEY = 'calendar-routines-v1';
   const WEEKDAYS = ['日','一','二','三','四','五','六'];
+  const ORDINAL_LABEL = {1:'第一', 2:'第二', 3:'第三', 4:'第四', 5:'第五', 'last':'最後一'};
+
+  // --- 台灣國定假日（依行政院人事行政總處公告日曆表整理，農曆節日逐年變動故僅列出已公告年度） ---
+  // 每筆為 'YYYY-MM-DD': '假日名稱'
+  const TAIWAN_HOLIDAYS = {
+    // 2025（民國114年）
+    '2025-01-01': '元旦',
+    '2025-01-27': '小年夜',
+    '2025-01-28': '除夕',
+    '2025-01-29': '春節',
+    '2025-01-30': '春節',
+    '2025-01-31': '春節',
+    '2025-02-28': '和平紀念日',
+    '2025-04-03': '兒童節',
+    '2025-04-04': '兒童節・民族掃墓節',
+    '2025-05-01': '勞動節',
+    '2025-05-30': '端午節（補假）',
+    '2025-05-31': '端午節',
+    '2025-10-06': '中秋節',
+    '2025-09-28': '孔子誕辰紀念日',
+    '2025-10-10': '國慶日',
+    '2025-10-24': '台灣光復暨金門古寧頭大捷紀念日（補假）',
+    '2025-10-25': '台灣光復暨金門古寧頭大捷紀念日',
+    '2025-12-25': '行憲紀念日',
+
+    // 2026（民國115年）
+    '2026-01-01': '元旦',
+    '2026-02-15': '小年夜',
+    '2026-02-16': '除夕',
+    '2026-02-17': '春節',
+    '2026-02-18': '春節',
+    '2026-02-19': '春節',
+    '2026-02-20': '春節（補假）',
+    '2026-02-27': '和平紀念日（補假）',
+    '2026-02-28': '和平紀念日',
+    '2026-04-03': '兒童節（補假）',
+    '2026-04-04': '兒童節',
+    '2026-04-05': '民族掃墓節',
+    '2026-04-06': '民族掃墓節（補假）',
+    '2026-05-01': '勞動節',
+    '2026-06-19': '端午節',
+    '2026-09-25': '中秋節',
+    '2026-09-28': '孔子誕辰紀念日',
+    '2026-10-09': '國慶日（補假）',
+    '2026-10-10': '國慶日',
+    '2026-10-25': '台灣光復暨金門古寧頭大捷紀念日',
+    '2026-10-26': '台灣光復暨金門古寧頭大捷紀念日（補假）',
+    '2026-12-25': '行憲紀念日',
+
+    // 2027（民國116年）
+    '2027-01-01': '元旦',
+    '2027-02-04': '小年夜',
+    '2027-02-05': '除夕',
+    '2027-02-06': '春節',
+    '2027-02-07': '春節',
+    '2027-02-08': '春節',
+    '2027-02-09': '春節（補假）',
+    '2027-02-10': '春節（補假）',
+    '2027-02-28': '和平紀念日',
+    '2027-03-01': '和平紀念日（補假）',
+    '2027-04-04': '兒童節',
+    '2027-04-05': '民族掃墓節',
+    '2027-04-06': '兒童節（補假）',
+    '2027-04-30': '勞動節（補假）',
+    '2027-05-01': '勞動節',
+    '2027-06-09': '端午節',
+    '2027-09-15': '中秋節',
+    '2027-09-28': '孔子誕辰紀念日',
+    '2027-10-10': '國慶日',
+    '2027-10-11': '國慶日（補假）',
+    '2027-10-25': '台灣光復暨金門古寧頭大捷紀念日',
+    '2027-12-24': '行憲紀念日（補假）',
+    '2027-12-25': '行憲紀念日',
+    '2027-12-31': '元旦（補假）'
+  };
+
+  function getHoliday(year, month, day){
+    // month: 0-11
+    return TAIWAN_HOLIDAYS[fmtKey(year, month, day)] || null;
+  }
 
   const seedEvents = {
     '2026-09-13': [{id:'s1', title:'祭拜理事', time:'10:00', tag:'red'}],
@@ -427,14 +739,60 @@
   };
 
   let events = {};
+  let routines = [];
   let today = new Date();
   let viewYear = today.getFullYear();
   let viewMonth = today.getMonth(); // 0-11
   let selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
   let editingId = null;
+  let editingRoutineId = null;
 
   function fmtKey(y,m,d){
     return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  }
+
+  // 找出某年某月中，第 ordinal 個指定星期幾是幾號（找不到回傳 null）
+  function getOrdinalDay(year, month, weekday, ordinal){
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const matches = [];
+    for(let d=1; d<=daysInMonth; d++){
+      if(new Date(year, month, d).getDay() === weekday) matches.push(d);
+    }
+    if(ordinal === 'last') return matches.length ? matches[matches.length-1] : null;
+    const idx = Number(ordinal) - 1;
+    return matches[idx] !== undefined ? matches[idx] : null;
+  }
+
+  // 展開某年某月（0-11）的所有例行事項，回傳 { 'YYYY-MM-DD': [event, ...] }
+  function computeRoutineEventsForMonth(year, month){
+    const result = {};
+    const monthNum = month + 1;
+    routines.forEach(r=>{
+      if(!r.months || !r.months.includes(monthNum)) return;
+      const day = getOrdinalDay(year, month, r.weekday, r.ordinal);
+      if(day === null) return;
+      const key = fmtKey(year, month, day);
+      if(r.exceptions && r.exceptions.includes(key)) return;
+      if(!result[key]) result[key] = [];
+      result[key].push({
+        id: 'routine-'+r.id+'-'+key,
+        title: r.title,
+        time: r.time,
+        tag: r.tag,
+        isRoutine: true,
+        routineId: r.id
+      });
+    });
+    return result;
+  }
+
+  // 取得某一天所有事項（手動 + 例行），需傳入年份與月份（0-11）以展開例行事項
+  function getEventsForDate(year, month, day){
+    const key = fmtKey(year, month, day);
+    const manual = events[key] || [];
+    const routineMap = computeRoutineEventsForMonth(year, month);
+    const routineEvs = routineMap[key] || [];
+    return manual.concat(routineEvs);
   }
 
   async function loadEvents(){
@@ -456,6 +814,27 @@
   async function saveEvents(){
     try{
       await window.storage.set(STORAGE_KEY, JSON.stringify(events), false);
+    } catch(e){
+      setStatus('儲存失敗，請稍後再試');
+    }
+  }
+
+  async function loadRoutines(){
+    try{
+      const res = await window.storage.get(ROUTINE_STORAGE_KEY, false);
+      if(res && res.value){
+        routines = JSON.parse(res.value);
+      } else {
+        routines = [];
+      }
+    } catch(e){
+      routines = [];
+    }
+  }
+
+  async function saveRoutines(){
+    try{
+      await window.storage.set(ROUTINE_STORAGE_KEY, JSON.stringify(routines), false);
     } catch(e){
       setStatus('儲存失敗，請稍後再試');
     }
@@ -514,11 +893,12 @@
       const dow = new Date(viewYear, viewMonth, d).getDay();
       const key = fmtKey(viewYear, viewMonth, d);
       const isToday = (viewYear===today.getFullYear() && viewMonth===today.getMonth() && d===today.getDate());
-      const dayEventsForClass = events[key] || [];
+      const dayEventsForClass = getEventsForDate(viewYear, viewMonth, d);
       const hasEvents = dayEventsForClass.length > 0;
       const hasRed = dayEventsForClass.some(e=>e.tag==='red');
+      const holidayName = getHoliday(viewYear, viewMonth, d);
       const cell = document.createElement('div');
-      cell.className = 'cell' + (dow===0||dow===6 ? ' weekend':'') + (isToday?' is-today':'') + (key===selectedKey?' selected':'') + (hasEvents?' has-events':'') + (hasRed?' has-red':'');
+      cell.className = 'cell' + (dow===0||dow===6 ? ' weekend':'') + (isToday?' is-today':'') + (key===selectedKey?' selected':'') + (hasEvents?' has-events':'') + (hasRed?' has-red':'') + (holidayName?' holiday':'');
       cell.dataset.key = key;
 
       const dateSpan = document.createElement('span');
@@ -526,11 +906,18 @@
       dateSpan.textContent = d;
       cell.appendChild(dateSpan);
 
-      const dayEvents = events[key] || [];
+      if(holidayName){
+        const hSpan = document.createElement('span');
+        hSpan.className = 'holiday-name';
+        hSpan.textContent = holidayName;
+        cell.appendChild(hSpan);
+      }
+
+      const dayEvents = dayEventsForClass;
       const shown = dayEvents.slice(0,2);
       shown.forEach(ev=>{
         const chip = document.createElement('span');
-        chip.className = 'chip' + (ev.tag==='red' ? ' red':'');
+        chip.className = 'chip' + (ev.tag==='red' ? ' red':'') + (ev.isRoutine ? ' routine':'');
         chip.textContent = ev.title + (ev.time ? ' '+ev.time : '');
         cell.appendChild(chip);
       });
@@ -556,11 +943,12 @@
     const [y,m,d] = selectedKey.split('-').map(Number);
     const dow = new Date(y, m-1, d).getDay();
     document.getElementById('panelDate').textContent = y + '年 ' + m + '月 ' + d + '日';
-    document.getElementById('panelWeekday').textContent = '星期' + WEEKDAYS[dow];
+    const holidayName = getHoliday(y, m-1, d);
+    document.getElementById('panelWeekday').textContent = '星期' + WEEKDAYS[dow] + (holidayName ? '　｜　國：' + holidayName : '');
 
     const list = document.getElementById('eventList');
     list.innerHTML = '';
-    const dayEvents = events[selectedKey] || [];
+    const dayEvents = getEventsForDate(y, m-1, d);
 
     if(dayEvents.length === 0){
       const p = document.createElement('div');
@@ -578,6 +966,12 @@
       const t = document.createElement('div');
       t.className = 'title';
       t.textContent = ev.title;
+      if(ev.isRoutine){
+        const badge = document.createElement('span');
+        badge.className = 'badge-routine';
+        badge.textContent = '例行';
+        t.appendChild(badge);
+      }
       info.appendChild(t);
       if(ev.time){
         const tm = document.createElement('div');
@@ -589,15 +983,26 @@
 
       const actions = document.createElement('div');
       actions.className = 'actions';
-      const editBtn = document.createElement('button');
-      editBtn.textContent = '編輯';
-      editBtn.addEventListener('click', ()=> startEdit(ev));
-      const delBtn = document.createElement('button');
-      delBtn.className = 'del';
-      delBtn.textContent = '刪除';
-      delBtn.addEventListener('click', ()=> deleteEvent(ev.id));
-      actions.appendChild(editBtn);
-      actions.appendChild(delBtn);
+      if(ev.isRoutine){
+        const skipBtn = document.createElement('button');
+        skipBtn.textContent = '略過此次';
+        skipBtn.addEventListener('click', ()=> skipRoutineOccurrence(ev.routineId, selectedKey));
+        const manageBtn = document.createElement('button');
+        manageBtn.textContent = '管理規則';
+        manageBtn.addEventListener('click', ()=> openRoutineModal(ev.routineId));
+        actions.appendChild(skipBtn);
+        actions.appendChild(manageBtn);
+      } else {
+        const editBtn = document.createElement('button');
+        editBtn.textContent = '編輯';
+        editBtn.addEventListener('click', ()=> startEdit(ev));
+        const delBtn = document.createElement('button');
+        delBtn.className = 'del';
+        delBtn.textContent = '刪除';
+        delBtn.addEventListener('click', ()=> deleteEvent(ev.id));
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+      }
       item.appendChild(actions);
 
       list.appendChild(item);
@@ -659,6 +1064,188 @@
     renderPanel();
   }
 
+  // --- 例行事項：月份格建立 ---
+  const routineMonthGrid = document.getElementById('routineMonthGrid');
+  for(let mo=1; mo<=12; mo++){
+    const label = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = mo;
+    cb.className = 'routine-month-cb';
+    cb.checked = true;
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(mo+'月'));
+    routineMonthGrid.appendChild(label);
+  }
+  function getCheckedMonths(){
+    return Array.from(document.querySelectorAll('.routine-month-cb:checked')).map(cb=>Number(cb.value));
+  }
+  function setCheckedMonths(monthsArr){
+    document.querySelectorAll('.routine-month-cb').forEach(cb=>{
+      cb.checked = monthsArr.includes(Number(cb.value));
+    });
+  }
+  document.getElementById('monthAllBtn').addEventListener('click', ()=>{
+    document.querySelectorAll('.routine-month-cb').forEach(cb=> cb.checked = true);
+  });
+  document.getElementById('monthNoneBtn').addEventListener('click', ()=>{
+    document.querySelectorAll('.routine-month-cb').forEach(cb=> cb.checked = false);
+  });
+
+  function describeRoutine(r){
+    const monthsTxt = (r.months && r.months.length===12) ? '每個月' : ('僅 ' + (r.months||[]).join('、') + ' 月');
+    return monthsTxt + '・' + ORDINAL_LABEL[r.ordinal] + '個星期' + WEEKDAYS[r.weekday] + (r.time ? '・'+r.time : '');
+  }
+
+  function renderRoutineList(){
+    const list = document.getElementById('routineList');
+    list.innerHTML = '';
+    if(routines.length === 0){
+      const p = document.createElement('div');
+      p.className = 'empty-note small';
+      p.textContent = '目前沒有例行事項，請在下方新增（例如：青少班固定每月第四個星期日）。';
+      list.appendChild(p);
+    }
+    routines.forEach(r=>{
+      const item = document.createElement('div');
+      item.className = 'routine-item' + (r.tag==='red' ? ' red':'');
+      item.dataset.id = r.id;
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      const t = document.createElement('div');
+      t.className = 'title';
+      t.textContent = r.title;
+      info.appendChild(t);
+      const d = document.createElement('div');
+      d.className = 'desc';
+      d.textContent = describeRoutine(r);
+      info.appendChild(d);
+      item.appendChild(info);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '編輯';
+      editBtn.addEventListener('click', ()=> startEditRoutine(r));
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del';
+      delBtn.textContent = '刪除';
+      delBtn.addEventListener('click', ()=> deleteRoutine(r.id));
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      item.appendChild(actions);
+
+      list.appendChild(item);
+    });
+  }
+
+  function startEditRoutine(r){
+    editingRoutineId = r.id;
+    document.getElementById('routineTitleInput').value = r.title;
+    document.getElementById('routineTimeInput').value = r.time || '';
+    document.getElementById('routineTagInput').value = r.tag;
+    document.getElementById('routineWeekdayInput').value = r.weekday;
+    document.getElementById('routineOrdinalInput').value = r.ordinal;
+    setCheckedMonths(r.months || []);
+    document.getElementById('routineFormTitleLabel').textContent = '編輯例行事項';
+    document.getElementById('routineSaveBtn').textContent = '更新';
+    document.getElementById('routineCancelEditBtn').style.display = 'block';
+    document.getElementById('routineTitleInput').focus();
+  }
+
+  function resetRoutineForm(){
+    editingRoutineId = null;
+    document.getElementById('routineTitleInput').value = '';
+    document.getElementById('routineTimeInput').value = '';
+    document.getElementById('routineTagInput').value = 'gold';
+    document.getElementById('routineWeekdayInput').value = '0';
+    document.getElementById('routineOrdinalInput').value = '1';
+    setCheckedMonths([1,2,3,4,5,6,7,8,9,10,11,12]);
+    document.getElementById('routineFormTitleLabel').textContent = '新增例行事項';
+    document.getElementById('routineSaveBtn').textContent = '新增';
+    document.getElementById('routineCancelEditBtn').style.display = 'none';
+  }
+
+  function setRoutineStatus(msg){
+    const el = document.getElementById('routineStatusMsg');
+    el.textContent = msg;
+    if(msg) setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 2500);
+  }
+
+  async function saveRoutineForm(){
+    const title = document.getElementById('routineTitleInput').value.trim();
+    if(!title){ setRoutineStatus('請輸入項目名稱'); return; }
+    const time = document.getElementById('routineTimeInput').value.trim();
+    const tag = document.getElementById('routineTagInput').value;
+    const weekday = Number(document.getElementById('routineWeekdayInput').value);
+    const ordinalRaw = document.getElementById('routineOrdinalInput').value;
+    const ordinal = ordinalRaw === 'last' ? 'last' : Number(ordinalRaw);
+    const months = getCheckedMonths();
+    if(months.length === 0){ setRoutineStatus('請至少選擇一個月份'); return; }
+
+    if(editingRoutineId){
+      const idx = routines.findIndex(r=>r.id===editingRoutineId);
+      if(idx>-1){
+        const prev = routines[idx];
+        routines[idx] = {id: editingRoutineId, title, time, tag, weekday, ordinal, months, exceptions: prev.exceptions || []};
+      }
+      setRoutineStatus('已更新');
+    } else {
+      routines.push({id: 'r'+Date.now()+Math.floor(Math.random()*1000), title, time, tag, weekday, ordinal, months, exceptions: []});
+      setRoutineStatus('已新增');
+    }
+    await saveRoutines();
+    resetRoutineForm();
+    renderRoutineList();
+    render();
+    renderPanel();
+  }
+
+  async function deleteRoutine(id){
+    routines = routines.filter(r=>r.id!==id);
+    await saveRoutines();
+    if(editingRoutineId === id) resetRoutineForm();
+    setRoutineStatus('已刪除');
+    renderRoutineList();
+    render();
+    renderPanel();
+  }
+
+  async function skipRoutineOccurrence(routineId, dateKey){
+    const r = routines.find(r=>r.id===routineId);
+    if(!r) return;
+    if(!r.exceptions) r.exceptions = [];
+    if(!r.exceptions.includes(dateKey)) r.exceptions.push(dateKey);
+    await saveRoutines();
+    setStatus('已略過這次');
+    render();
+    renderPanel();
+  }
+
+  function openRoutineModal(highlightId){
+    renderRoutineList();
+    if(highlightId){
+      const r = routines.find(r=>r.id===highlightId);
+      if(r) startEditRoutine(r);
+    } else {
+      resetRoutineForm();
+    }
+    document.getElementById('routineModal').classList.add('open');
+  }
+  function closeRoutineModal(){
+    document.getElementById('routineModal').classList.remove('open');
+    resetRoutineForm();
+  }
+
+  document.getElementById('openRoutineBtn').addEventListener('click', ()=> openRoutineModal());
+  document.getElementById('routineModalClose').addEventListener('click', closeRoutineModal);
+  document.getElementById('routineModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'routineModal') closeRoutineModal();
+  });
+  document.getElementById('routineSaveBtn').addEventListener('click', saveRoutineForm);
+  document.getElementById('routineCancelEditBtn').addEventListener('click', ()=>{ resetRoutineForm(); });
+
   document.getElementById('saveBtn').addEventListener('click', saveForm);
   document.getElementById('cancelEditBtn').addEventListener('click', ()=>{ resetForm(); });
 
@@ -682,7 +1269,7 @@
   yearSelect.addEventListener('change', ()=>{ viewYear = parseInt(yearSelect.value); render(); });
   monthSelect.addEventListener('change', ()=>{ viewMonth = parseInt(monthSelect.value); render(); });
 
-  loadEvents().then(()=>{ renderPanel(); });
+  loadRoutines().then(()=> loadEvents()).then(()=>{ renderPanel(); });
 })();
 </script>
 </body>
