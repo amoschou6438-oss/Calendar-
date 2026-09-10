@@ -1468,13 +1468,16 @@
     selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
     render();
     renderPanel();
+    scrollToToday();
   });
   yearSelect.addEventListener('change', ()=>{ viewYear = parseInt(yearSelect.value); render(); });
   monthSelect.addEventListener('change', ()=>{ viewMonth = parseInt(monthSelect.value); render(); });
 
   function scrollToToday(){
-    const el = document.querySelector('.day-row.is-today');
-    if(el) el.scrollIntoView({ block: 'center' });
+    requestAnimationFrame(()=>{
+      const el = document.querySelector('.day-row.is-today');
+      if(el) el.scrollIntoView({ block: 'center' });
+    });
   }
 
   // --- 生日：西元年／月／日下拉選單建立 ---
