@@ -20,6 +20,10 @@
     --red: #a8483f;
     --purple: #9b7fc7;
     --purple-dim: #6f5a8c;
+    --teal: #5aa3a3;
+    --teal-dim: #427a7a;
+    --green: #7aab6e;
+    --green-dim: #5a8451;
     --cream: #f0e9d8;
     --muted: #92a6a2;
     --weekend-tint: rgba(201,169,97,0.06);
@@ -77,18 +81,27 @@
 
   .nav{
     display:flex;
-    align-items:center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 10px;
     margin-bottom: 18px;
-    gap: 12px;
-    flex-wrap: wrap;
   }
-  .nav-left{ display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
-  .month-title{
-    font-family:'Noto Serif TC', serif;
-    font-weight: 900;
-    font-size: 24px;
-    min-width: 150px;
+  .nav-left{ display:flex; align-items:center; justify-content: center; gap:10px; flex-wrap: wrap; }
+  .func-slide{
+    display:flex;
+    align-items:center;
+    justify-content: center;
+    gap:10px;
+    flex-wrap: wrap;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: max-height 0.35s ease, opacity 0.3s ease, transform 0.3s ease;
+  }
+  .func-slide.open{
+    max-height: 200px;
+    opacity: 1;
+    transform: translateY(0);
   }
   .nav-arrow{
     background: var(--panel-2);
@@ -108,7 +121,10 @@
     padding: 7px 9px;
     border-radius: 6px;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    text-align-last: center;
     flex-shrink: 0;
   }
   .today-btn{
@@ -133,26 +149,36 @@
   }
 
   .day-list{
-    border: 1px solid var(--panel-line);
-    border-radius: 8px;
-    overflow: hidden;
-    background: var(--panel);
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
   }
+  .schedule-view-toggle{
+    text-align: center;
+    color: var(--gold);
+    font-size: 13px;
+    padding: 2px 0 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .schedule-view-toggle:hover{ text-decoration: underline; }
   .day-row{
     display:flex;
     align-items:flex-start;
-    gap: 14px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--panel-line);
+    gap: 16px;
+    padding: 13px 16px;
+    border: 1px solid var(--panel-line);
+    border-radius: 12px;
+    background: var(--panel);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
   }
-  .day-row:last-child{ border-bottom: none; }
   @media (hover: hover) and (pointer: fine){
-    .day-row:hover{ background: rgba(201,169,97,0.08); }
+    .day-row:hover{ border-color: var(--gold-dim); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
   }
   .day-row.weekend{ background: var(--weekend-tint); }
-  .day-row.selected{ outline: 2px solid var(--gold); outline-offset: -2px; }
+  .day-row.selected{ border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+  .day-row.is-today{ border-color: var(--gold); }
 
   .date-block{
     display:flex;
@@ -161,10 +187,11 @@
     justify-content:center;
     width: 52px;
     flex-shrink: 0;
-    padding-top: 2px;
+    padding: 2px 14px 2px 0;
+    border-right: 1px solid var(--panel-line);
   }
   .date-badge{
-    width: 32px; height: 32px;
+    width: 34px; height: 34px;
     border-radius: 50%;
     display:flex;
     align-items:center;
@@ -185,7 +212,8 @@
   .date-weekday{
     font-size: 11px;
     color: var(--muted);
-    margin-top: 3px;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
   }
   .date-weekday.weekend{ color: var(--gold-dim); }
 
@@ -194,41 +222,107 @@
     display:flex;
     flex-wrap: wrap;
     align-items:center;
-    gap: 6px;
-    min-height: 32px;
-    padding-top: 4px;
+    gap: 7px;
+    min-height: 34px;
+    padding-top: 5px;
   }
   .day-holiday-tag{
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--red);
     font-weight: 700;
     letter-spacing: 0.3px;
-    margin-right: 2px;
+    padding: 4px 9px;
+    border: 1px solid rgba(168,72,63,0.4);
+    border-radius: 999px;
   }
   .day-empty-hint{
     font-size: 12px;
     color: var(--muted);
     opacity: 0.55;
   }
+  .empty-month-note{
+    text-align:center;
+    padding: 36px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    border: 1px dashed var(--panel-line);
+    border-radius: 12px;
+  }
+  .empty-month-note .btn{ margin-top: 14px; }
 
   .chip{
-    display:inline-block;
+    display:inline-flex;
+    align-items:center;
+    gap: 5px;
     font-size: 11.5px;
     line-height: 1.3;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: rgba(201,169,97,0.16);
-    border-left: 2px solid var(--gold);
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    background: rgba(201,169,97,0.13);
+    border: 1px solid rgba(201,169,97,0.35);
     color: var(--cream);
     white-space: nowrap;
   }
-  .chip.red{
-    background: rgba(168,72,63,0.2);
-    border-left: 2px solid var(--red);
+  .chip::before{
+    content:'';
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--gold);
+    flex-shrink:0;
   }
+  .chip.red{
+    background: rgba(168,72,63,0.14);
+    border-color: rgba(168,72,63,0.4);
+  }
+  .chip.red::before{ background: var(--red); }
   .chip.birthday{
-    background: rgba(155,127,199,0.2);
-    border-left: 2px solid var(--purple);
+    background: rgba(155,127,199,0.14);
+    border-color: rgba(155,127,199,0.4);
+  }
+  .chip.birthday::before{ background: var(--purple); }
+  .chip.meeting{
+    background: rgba(90,163,163,0.14);
+    border-color: rgba(90,163,163,0.4);
+  }
+  .chip.meeting::before{ background: var(--teal); }
+  .chip.special{
+    background: rgba(122,171,110,0.14);
+    border-color: rgba(122,171,110,0.4);
+  }
+  .chip.special::before{ background: var(--green); }
+  .fab-add-btn{
+    position: fixed;
+    right: 22px;
+    bottom: 26px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    z-index: 40;
+    transition: transform 0.15s;
+  }
+  .fab-add-btn:hover{ transform: scale(1.06); }
+  .jump-date{
+    display:flex;
+    align-items:center;
+    gap: 6px;
+    margin: 10px 0 2px;
+  }
+  .jump-date select{
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    color: var(--cream);
+    padding: 5px 6px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
   }
   @media (max-width: 480px){
     .day-row{ padding: 8px 10px; gap: 10px; }
@@ -269,6 +363,8 @@
   }
   .event-item.red{ border-left-color: var(--red); }
   .event-item.birthday{ border-left-color: var(--purple); }
+  .event-item.meeting{ border-left-color: var(--teal); }
+  .event-item.special{ border-left-color: var(--green); }
   .event-item .info{ flex:1; }
   .event-item .info .title{ font-weight: 600; }
   .event-item .info .time{ color: var(--muted); font-size: 11.5px; margin-top:2px; }
@@ -303,7 +399,7 @@
     margin-top: 10px;
   }
   .form label:first-child{ margin-top:0; }
-  .form input[type=text], .form select{
+  .form input[type=text], .form input[type=date], .form select{
     width: 100%;
     background: var(--panel-2);
     border: 1px solid var(--panel-line);
@@ -314,6 +410,7 @@
     font-size: 13px;
   }
   .form input:focus, .form select:focus{ outline: 1px solid var(--gold); }
+  .form input[type=date]{ color-scheme: dark; }
   .tag-choice{ display:flex; gap:8px; flex-wrap: wrap; }
   .tag-choice label{
     flex: 1 1 100px;
@@ -351,6 +448,13 @@
   .btn.primary:hover{ opacity: 0.9; }
   .btn.cancel{ border-color: var(--panel-line); color: var(--muted); }
 
+  .schedule-type-btn{
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
   .status{
     font-size: 11px;
     color: var(--muted);
@@ -360,12 +464,9 @@
 
   @media (max-width: 720px){
     .masthead h1{ font-size: 22px; letter-spacing: 1px; }
-    .masthead p{ font-size: 11.5px; }
-    .legend{ font-size: 11px; gap: 10px; }
-    .month-title{ font-size: 19px; min-width: 0; }
     .nav{ gap: 8px; }
     .nav-left{ gap: 6px; }
-    .nav select{ padding: 6px 6px; font-size: 12px; }
+    .nav select{ padding: 6px 6px; font-size: 24px; }
     .today-btn{ padding: 6px 10px; font-size: 12px; }
     .routine-btn{ padding: 6px 10px; font-size: 12px; }
   }
@@ -375,7 +476,7 @@
     .modal{ padding: 16px; }
   }
 
-  /* --- 例行事項 --- */
+  /* --- 例行班會 --- */
   .routine-btn{
     background: transparent;
     border: 1px solid var(--gold-dim);
@@ -408,6 +509,26 @@
     font-size: 10px;
     color: var(--purple);
     border: 1px solid var(--purple-dim);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-meeting{
+    display:inline-block;
+    font-size: 10px;
+    color: var(--teal);
+    border: 1px solid var(--teal-dim);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-special{
+    display:inline-block;
+    font-size: 10px;
+    color: var(--green);
+    border: 1px solid var(--green-dim);
     border-radius: 4px;
     padding: 1px 5px;
     margin-left: 6px;
@@ -486,6 +607,8 @@
   }
   .routine-item.red{ border-left-color: var(--red); }
   .routine-item.birthday{ border-left-color: var(--purple); }
+  .routine-item.meeting{ border-left-color: var(--teal); }
+  .routine-item.special{ border-left-color: var(--green); }
   .routine-item .info .title{ font-weight: 600; }
   .routine-item .info .desc{ color: var(--muted); font-size: 11.5px; margin-top:3px; }
   .routine-item .actions{ display:flex; gap:6px; flex-shrink:0; }
@@ -541,29 +664,20 @@
   <div class="masthead">
     <div>
       <h1>萬 年 曆</h1>
-      <p>點選任一天即可新增、修改或刪除事項</p>
-    </div>
-    <div class="legend">
-      <span><i class="dot gold"></i>例行班務</span>
-      <span><i class="dot red"></i>重要事項</span>
-      <span><i class="dot birthday"></i>🎂生日</span>
-      <span>&#8635; 自動產生的例行事項</span>
-      <span style="color:var(--red);">國 台灣國定假日</span>
     </div>
   </div>
 
   <div class="nav">
     <div class="nav-left">
       <button class="nav-arrow" id="prevBtn">&#8249;</button>
-      <div class="month-title" id="monthTitle"></div>
-      <button class="nav-arrow" id="nextBtn">&#8250;</button>
-    </div>
-    <div class="nav-left">
       <select id="yearSelect"></select>
       <select id="monthSelect"></select>
+      <button class="nav-arrow" id="nextBtn">&#8250;</button>
       <button class="today-btn" id="todayBtn">↩️ 回到今天</button>
-      <button class="routine-btn" id="openRoutineBtn">🗓️ 例行事項</button>
-      <button class="routine-btn" id="openBirthdayBtn">🎂 生日</button>
+      <button class="routine-btn" id="toggleFuncBtn">顯示功能</button>
+    </div>
+    <div class="func-slide" id="funcBtnGroup">
+      <button class="routine-btn" id="openScheduleTypeBtn">📋 輸入排程</button>
       <button class="routine-btn" id="exportBackupBtn">💾 備份</button>
       <button class="routine-btn" id="openRestoreBtn">📀 回復</button>
     </div>
@@ -571,6 +685,7 @@
 
   <div class="layout">
     <div>
+      <div class="schedule-view-toggle" id="scheduleViewToggle">切換到當月日曆</div>
       <div class="day-list" id="dayGrid"></div>
     </div>
   </div>
@@ -585,6 +700,13 @@
         <div class="weekday-label" id="panelWeekday" style="margin-bottom:0;"></div>
       </div>
       <button class="modal-close" id="dayModalClose">&times;</button>
+    </div>
+
+    <div class="jump-date">
+      <span style="font-size:11.5px; color:var(--muted);">跳至日期：</span>
+      <select id="jumpYearInput"></select>
+      <select id="jumpMonthInput"></select>
+      <select id="jumpDayInput"></select>
     </div>
 
     <div id="eventList"></div>
@@ -612,17 +734,19 @@
   </div>
 </div>
 
+<button class="fab-add-btn" id="fabAddBtn" title="新增事項" aria-label="新增事項">＋</button>
+
 <div class="modal-overlay" id="routineModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>🗓️ 例行事項</h2>
+      <h2>🗓️ 例行班會</h2>
       <button class="modal-close" id="routineModalClose">&times;</button>
     </div>
 
     <div class="routine-list" id="routineList"></div>
 
     <div class="form" id="routineFormArea" style="margin-top:0; border-top:1px solid var(--panel-line); padding-top:14px;">
-      <div id="routineFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增例行事項</div>
+      <div id="routineFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增例行班會</div>
 
       <label>項目名稱</label>
       <input type="text" id="routineTitleInput" placeholder="例如：青少班">
@@ -721,6 +845,106 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="scheduleTypeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>輸入排程</h2>
+      <button class="modal-close" id="scheduleTypeModalClose">&times;</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+      <button class="btn schedule-type-btn" id="chooseRoutineBtn">🗓️ 例行班會</button>
+      <button class="btn schedule-type-btn" id="chooseBirthdayBtn">🎂 生日</button>
+      <button class="btn schedule-type-btn" id="chooseMeetingBtn">🤝 會議</button>
+      <button class="btn schedule-type-btn" id="chooseSpecialBtn">⭐ 特殊事項</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="meetingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🤝 會議</h2>
+      <button class="modal-close" id="meetingModalClose">&times;</button>
+    </div>
+
+    <div class="routine-list" id="meetingList"></div>
+
+    <div class="form" id="meetingFormArea" style="margin-top:0; border-top:1px solid var(--panel-line); padding-top:14px;">
+      <div id="meetingFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增會議</div>
+
+      <label>會議類型</label>
+      <select id="meetingTypeInput">
+        <option value="童蒙班會議">童蒙班會議</option>
+        <option value="青少班會議">青少班會議</option>
+        <option value="__custom__">自訂…</option>
+      </select>
+      <input type="text" id="meetingCustomNameInput" placeholder="請輸入會議名稱" style="display:none; margin-top:8px;">
+
+      <label style="margin-top:10px;">日期（西元年／月／日）</label>
+      <div class="inline-fields">
+        <div><select id="meetingYearInput"></select></div>
+        <div><select id="meetingMonthInput"></select></div>
+        <div><select id="meetingDayInput"></select></div>
+      </div>
+
+      <label>時間</label>
+      <input type="text" id="meetingTimeInput" placeholder="例如：20:00" value="20:00">
+
+      <div class="form-actions">
+        <button class="btn cancel" id="meetingCancelEditBtn" style="display:none;">取消編輯</button>
+        <button class="btn primary" id="meetingSaveBtn">新增</button>
+      </div>
+      <div class="status" id="meetingStatusMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="specialModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⭐ 特殊事項</h2>
+      <button class="modal-close" id="specialModalClose">&times;</button>
+    </div>
+
+    <div class="routine-list" id="specialList"></div>
+
+    <div class="form" id="specialFormArea" style="margin-top:0; border-top:1px solid var(--panel-line); padding-top:14px;">
+      <div id="specialFormTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增特殊事項</div>
+
+      <label>事項名稱</label>
+      <input type="text" id="specialNameInput" placeholder="例如：結業典禮">
+
+      <label>重複頻率</label>
+      <select id="specialFreqInput">
+        <option value="yearly">每年一次</option>
+        <option value="monthly">每月一次</option>
+      </select>
+
+      <div id="specialYearlyFields">
+        <label>日期（每年重複，僅需月／日）</label>
+        <div class="inline-fields">
+          <div><select id="specialMonthInput"></select></div>
+          <div><select id="specialDayInput"></select></div>
+        </div>
+      </div>
+
+      <div id="specialMonthlyFields" style="display:none;">
+        <label>日期（每月重複，僅需選擇日）</label>
+        <select id="specialMonthlyDayInput"></select>
+
+        <label>結束日期（選填，超過此日期後不再重複出現）</label>
+        <input type="date" id="specialEndDateInput">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn cancel" id="specialCancelEditBtn" style="display:none;">取消編輯</button>
+        <button class="btn primary" id="specialSaveBtn">新增</button>
+      </div>
+      <div class="status" id="specialStatusMsg"></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="restoreModal">
   <div class="modal">
     <div class="modal-header">
@@ -729,7 +953,7 @@
     </div>
     <div class="form" style="margin-top:0; border-top:none; padding-top:0;">
       <div style="font-size:12.5px; color:var(--muted); margin-bottom:10px; line-height:1.6;">
-        選擇先前匯出的備份檔案（.json）。回復後將覆蓋目前所有事項、例行事項與生日資料，請先確認再繼續。
+        選擇先前匯出的備份檔案（.json）。回復後將覆蓋目前所有事項、例行班會與生日資料，請先確認再繼續。
       </div>
       <input type="file" id="restoreFileInput" accept="application/json,.json" style="display:none;">
       <button class="btn" id="chooseRestoreFileBtn" style="width:100%;">選擇備份檔案…</button>
@@ -753,6 +977,7 @@
   const STORAGE_KEY = 'calendar-events-v1';
   const ROUTINE_STORAGE_KEY = 'calendar-routines-v1';
   const BIRTHDAY_STORAGE_KEY = 'calendar-birthdays-v1';
+  const SPECIAL_STORAGE_KEY = 'calendar-specials-v1';
   const WEEKDAYS = ['日','一','二','三','四','五','六'];
   const ORDINAL_LABEL = {1:'第一', 2:'第二', 3:'第三', 4:'第四', 5:'第五', 'last':'最後一'};
 
@@ -854,6 +1079,7 @@
   let events = {};
   let routines = [];
   let birthdays = [];
+  let specials = [];
   let today = new Date();
   let viewYear = today.getFullYear();
   let viewMonth = today.getMonth(); // 0-11
@@ -861,6 +1087,8 @@
   let editingId = null;
   let editingRoutineId = null;
   let editingBirthdayId = null;
+  let editingMeetingId = null;
+  let editingSpecialId = null;
 
   function fmtKey(y,m,d){
     return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
@@ -878,7 +1106,7 @@
     return matches[idx] !== undefined ? matches[idx] : null;
   }
 
-  // 展開某年某月（0-11）的所有例行事項，回傳 { 'YYYY-MM-DD': [event, ...] }
+  // 展開某年某月（0-11）的所有例行班會，回傳 { 'YYYY-MM-DD': [event, ...] }
   function computeRoutineEventsForMonth(year, month){
     const result = {};
     const monthNum = month + 1;
@@ -932,7 +1160,35 @@
     return result;
   }
 
-  // 取得某一天所有事項（手動 + 例行 + 生日），需傳入年份與月份（0-11）以展開例行事項
+  // 展開某年某月（0-11）的所有特殊事項（每年重複或每月重複），回傳 { 'YYYY-MM-DD': [event, ...] }
+  function computeSpecialEventsForMonth(year, month){
+    const result = {};
+    const monthNum = month + 1;
+    specials.forEach(s=>{
+      const freq = s.freq || 'yearly';
+      if(freq === 'yearly'){
+        if(Number(s.month) !== monthNum) return;
+      }
+      let day = Number(s.day);
+      const dim = daysInMonthOf(year, month);
+      if(day > dim) day = dim;
+      const key = fmtKey(year, month, day);
+      if(freq === 'monthly' && s.endDate && key > s.endDate) return;
+      if(s.exceptions && s.exceptions.includes(key)) return;
+      if(!result[key]) result[key] = [];
+      result[key].push({
+        id: 'special-'+s.id+'-'+key,
+        title: '⭐' + s.name,
+        time: '',
+        tag: 'special',
+        isSpecial: true,
+        specialId: s.id
+      });
+    });
+    return result;
+  }
+
+  // 取得某一天所有事項（手動＋會議 + 例行班會 + 生日 + 特殊事項），需傳入年份與月份（0-11）以展開自動產生的項目
   function getEventsForDate(year, month, day){
     const key = fmtKey(year, month, day);
     const manual = events[key] || [];
@@ -940,7 +1196,9 @@
     const routineEvs = routineMap[key] || [];
     const birthdayMap = computeBirthdayEventsForMonth(year, month);
     const birthdayEvs = birthdayMap[key] || [];
-    return manual.concat(routineEvs).concat(birthdayEvs);
+    const specialMap = computeSpecialEventsForMonth(year, month);
+    const specialEvs = specialMap[key] || [];
+    return manual.concat(routineEvs).concat(birthdayEvs).concat(specialEvs);
   }
 
   // --- 儲存介面：優先使用 Claude 的雲端儲存（window.storage）；
@@ -1042,6 +1300,27 @@
     }
   }
 
+  async function loadSpecials(){
+    try{
+      const res = await dataStore.get(SPECIAL_STORAGE_KEY);
+      if(res && res.value){
+        specials = JSON.parse(res.value);
+      } else {
+        specials = [];
+      }
+    } catch(e){
+      specials = [];
+    }
+  }
+
+  async function saveSpecials(){
+    try{
+      await dataStore.set(SPECIAL_STORAGE_KEY, JSON.stringify(specials));
+    } catch(e){
+      setSpecialStatus('儲存失敗，請稍後再試');
+    }
+  }
+
   function setStatus(msg){
     const el = document.getElementById('statusMsg');
     el.textContent = msg;
@@ -1062,15 +1341,18 @@
     monthSelect.appendChild(opt);
   }
 
+  let onlyScheduled = true;
+
   function render(){
-    document.getElementById('monthTitle').textContent = viewYear + '年 ' + (viewMonth+1) + '月';
     yearSelect.value = viewYear;
     monthSelect.value = viewMonth;
+    updateScheduleViewToggleLabel();
 
     const list = document.getElementById('dayGrid');
     list.innerHTML = '';
 
     const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    let shownCount = 0;
 
     for(let d=1; d<=daysInMonth; d++){
       const dow = new Date(viewYear, viewMonth, d).getDay();
@@ -1079,6 +1361,9 @@
       const dayEvents = getEventsForDate(viewYear, viewMonth, d);
       const hasRed = dayEvents.some(e=>e.tag==='red');
       const holidayName = getHoliday(viewYear, viewMonth, d);
+
+      if(onlyScheduled && dayEvents.length===0 && !holidayName && !isToday && key!==selectedKey) continue;
+      shownCount++;
 
       const row = document.createElement('div');
       row.className = 'day-row' + (dow===0||dow===6 ? ' weekend':'') + (isToday?' is-today':'') + (key===selectedKey?' selected':'') + (hasRed?' has-red':'') + (holidayName?' holiday':'');
@@ -1108,7 +1393,7 @@
 
       dayEvents.forEach(ev=>{
         const chip = document.createElement('span');
-        chip.className = 'chip' + (ev.tag==='red' ? ' red':'') + (ev.tag==='birthday' ? ' birthday':'') + (ev.isRoutine ? ' routine':'');
+        chip.className = 'chip' + (ev.tag==='red' ? ' red':'') + (ev.tag==='birthday' ? ' birthday':'') + (ev.tag==='meeting' ? ' meeting':'') + (ev.tag==='special' ? ' special':'') + (ev.isRoutine ? ' routine':'');
         const ageSuffix = (ev.isBirthday && typeof ev.age === 'number') ? '（'+ev.age+'歲）' : '';
         chip.textContent = ev.title + ageSuffix + (ev.time ? ' '+ev.time : '');
         eventsWrap.appendChild(chip);
@@ -1128,10 +1413,24 @@
         editingId = null;
         render();
         renderPanel();
+        syncJumpDateToSelected();
         openDayModal();
       });
 
       list.appendChild(row);
+    }
+
+    if(shownCount === 0){
+      const note = document.createElement('div');
+      note.className = 'empty-month-note';
+      note.innerHTML = '本月尚無安排的事項';
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = '＋ 新增事項';
+      btn.addEventListener('click', openFabAdd);
+      note.appendChild(document.createElement('br'));
+      note.appendChild(btn);
+      list.appendChild(note);
     }
   }
 
@@ -1155,7 +1454,7 @@
 
     dayEvents.forEach(ev=>{
       const item = document.createElement('div');
-      item.className = 'event-item' + (ev.tag==='red' ? ' red':'') + (ev.tag==='birthday' ? ' birthday':'');
+      item.className = 'event-item' + (ev.tag==='red' ? ' red':'') + (ev.tag==='birthday' ? ' birthday':'') + (ev.tag==='meeting' ? ' meeting':'') + (ev.tag==='special' ? ' special':'');
 
       const info = document.createElement('div');
       info.className = 'info';
@@ -1172,6 +1471,18 @@
         const badge = document.createElement('span');
         badge.className = 'badge-birthday';
         badge.textContent = (typeof ev.age === 'number' ? ev.age+'歲' : '生日');
+        t.appendChild(badge);
+      }
+      if(ev.tag==='meeting'){
+        const badge = document.createElement('span');
+        badge.className = 'badge-meeting';
+        badge.textContent = '會議';
+        t.appendChild(badge);
+      }
+      if(ev.isSpecial){
+        const badge = document.createElement('span');
+        badge.className = 'badge-special';
+        badge.textContent = '年度';
         t.appendChild(badge);
       }
       info.appendChild(t);
@@ -1201,6 +1512,15 @@
         const manageBtn = document.createElement('button');
         manageBtn.textContent = '管理';
         manageBtn.addEventListener('click', ()=> openBirthdayModal(ev.birthdayId));
+        actions.appendChild(skipBtn);
+        actions.appendChild(manageBtn);
+      } else if(ev.isSpecial){
+        const skipBtn = document.createElement('button');
+        skipBtn.textContent = '略過此次';
+        skipBtn.addEventListener('click', ()=> skipSpecialOccurrence(ev.specialId, selectedKey));
+        const manageBtn = document.createElement('button');
+        manageBtn.textContent = '管理';
+        manageBtn.addEventListener('click', ()=> openSpecialModal(ev.specialId));
         actions.appendChild(skipBtn);
         actions.appendChild(manageBtn);
       } else {
@@ -1285,7 +1605,7 @@
     renderPanel();
   }
 
-  // --- 例行事項：月份格建立 ---
+  // --- 例行班會：月份格建立 ---
   const routineMonthGrid = document.getElementById('routineMonthGrid');
   for(let mo=1; mo<=12; mo++){
     const label = document.createElement('label');
@@ -1324,7 +1644,7 @@
     if(routines.length === 0){
       const p = document.createElement('div');
       p.className = 'empty-note small';
-      p.textContent = '目前沒有例行事項，請在下方新增（例如：青少班固定每月第四個星期日）。';
+      p.textContent = '目前沒有例行班會，請在下方新增（例如：青少班固定每月第四個星期日）。';
       list.appendChild(p);
     }
     routines.forEach(r=>{
@@ -1369,7 +1689,7 @@
     document.getElementById('routineWeekdayInput').value = r.weekday;
     document.getElementById('routineOrdinalInput').value = r.ordinal;
     setCheckedMonths(r.months || []);
-    document.getElementById('routineFormTitleLabel').textContent = '編輯例行事項';
+    document.getElementById('routineFormTitleLabel').textContent = '編輯例行班會';
     document.getElementById('routineSaveBtn').textContent = '更新';
     document.getElementById('routineCancelEditBtn').style.display = 'block';
     document.getElementById('routineTitleInput').focus();
@@ -1383,7 +1703,7 @@
     document.getElementById('routineWeekdayInput').value = '0';
     document.getElementById('routineOrdinalInput').value = '1';
     setCheckedMonths([1,2,3,4,5,6,7,8,9,10,11,12]);
-    document.getElementById('routineFormTitleLabel').textContent = '新增例行事項';
+    document.getElementById('routineFormTitleLabel').textContent = '新增例行班會';
     document.getElementById('routineSaveBtn').textContent = '新增';
     document.getElementById('routineCancelEditBtn').style.display = 'none';
   }
@@ -1459,7 +1779,7 @@
     resetRoutineForm();
   }
 
-  document.getElementById('openRoutineBtn').addEventListener('click', ()=> openRoutineModal());
+  // openRoutineBtn 已整合進「輸入排程」選單，見下方 scheduleTypeModal 相關程式
   document.getElementById('routineModalClose').addEventListener('click', closeRoutineModal);
   document.getElementById('routineModal').addEventListener('click', (e)=>{
     if(e.target.id === 'routineModal') closeRoutineModal();
@@ -1484,6 +1804,94 @@
   document.getElementById('cancelEditBtn').addEventListener('click', ()=>{ resetForm(); });
   document.getElementById('addToggleBtn').addEventListener('click', ()=>{ resetForm(); showForm(); });
 
+  // --- 跳至日期（彈窗內快速切換） ---
+  const jumpYearSelect = document.getElementById('jumpYearInput');
+  const jumpMonthSelect = document.getElementById('jumpMonthInput');
+  const jumpDaySelect = document.getElementById('jumpDayInput');
+
+  function populateJumpYearOptions(){
+    jumpYearSelect.innerHTML = '';
+    const curY = today.getFullYear();
+    for(let y = curY-10; y <= curY+15; y++){
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y + '年';
+      jumpYearSelect.appendChild(opt);
+    }
+  }
+  function populateJumpMonthOptions(){
+    jumpMonthSelect.innerHTML = '';
+    for(let m=1; m<=12; m++){
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m + '月';
+      jumpMonthSelect.appendChild(opt);
+    }
+  }
+  function populateJumpDayOptions(){
+    const y = Number(jumpYearSelect.value) || today.getFullYear();
+    const m = Number(jumpMonthSelect.value) || 1;
+    const dim = new Date(y, m, 0).getDate();
+    const prevVal = Number(jumpDaySelect.value) || 1;
+    jumpDaySelect.innerHTML = '';
+    for(let d=1; d<=dim; d++){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d + '日';
+      jumpDaySelect.appendChild(opt);
+    }
+    jumpDaySelect.value = Math.min(prevVal, dim);
+  }
+  populateJumpYearOptions();
+  populateJumpMonthOptions();
+  populateJumpDayOptions();
+
+  function syncJumpDateToSelected(){
+    const [y,m,d] = selectedKey.split('-').map(Number);
+    jumpYearSelect.value = y;
+    jumpMonthSelect.value = m;
+    populateJumpDayOptions();
+    jumpDaySelect.value = d;
+  }
+
+  function goToJumpDate(){
+    const y = Number(jumpYearSelect.value);
+    const m = Number(jumpMonthSelect.value);
+    const d = Number(jumpDaySelect.value);
+    if(!y || !m || !d) return;
+    selectedKey = fmtKey(y, m-1, d);
+    viewYear = y;
+    viewMonth = m-1;
+    editingId = null;
+    render();
+    renderPanel();
+  }
+  jumpYearSelect.addEventListener('change', ()=>{ populateJumpDayOptions(); goToJumpDate(); });
+  jumpMonthSelect.addEventListener('change', ()=>{ populateJumpDayOptions(); goToJumpDate(); });
+  jumpDaySelect.addEventListener('change', goToJumpDate);
+
+  // --- 顯示當月排程（只顯示有安排）／ 顯示當月日曆（顯示全部日期）切換 ---
+  function updateScheduleViewToggleLabel(){
+    document.getElementById('scheduleViewToggle').textContent = onlyScheduled ? '切換到當月日曆' : '切換到當月排程';
+  }
+  document.getElementById('scheduleViewToggle').addEventListener('click', ()=>{
+    onlyScheduled = !onlyScheduled;
+    updateScheduleViewToggleLabel();
+    render();
+  });
+
+  // --- 浮動新增按鈕：不管目前是否顯示該日，都能直接新增事項（預設今天，可於彈窗內改日期） ---
+  function openFabAdd(){
+    selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
+    viewYear = today.getFullYear();
+    viewMonth = today.getMonth();
+    editingId = null;
+    render();
+    renderPanel();
+    syncJumpDateToSelected();
+    openDayModal();
+    resetForm();
+    showForm();
+  }
+  document.getElementById('fabAddBtn').addEventListener('click', openFabAdd);
+
   document.getElementById('prevBtn').addEventListener('click', ()=>{
     viewMonth--;
     if(viewMonth<0){ viewMonth=11; viewYear--; }
@@ -1504,6 +1912,13 @@
   });
   yearSelect.addEventListener('change', ()=>{ viewYear = parseInt(yearSelect.value); render(); });
   monthSelect.addEventListener('change', ()=>{ viewMonth = parseInt(monthSelect.value); render(); });
+
+  document.getElementById('toggleFuncBtn').addEventListener('click', ()=>{
+    const group = document.getElementById('funcBtnGroup');
+    const btn = document.getElementById('toggleFuncBtn');
+    const isOpen = group.classList.toggle('open');
+    btn.textContent = isOpen ? '隱藏功能' : '顯示功能';
+  });
 
   function scrollToToday(){
     requestAnimationFrame(()=>{
@@ -1705,7 +2120,7 @@
     resetBirthdayForm();
   }
 
-  document.getElementById('openBirthdayBtn').addEventListener('click', ()=> openBirthdayModal());
+  // openBirthdayBtn 已整合進「輸入排程」選單，見下方 scheduleTypeModal 相關程式
   document.getElementById('birthdayModalClose').addEventListener('click', closeBirthdayModal);
   document.getElementById('birthdayModal').addEventListener('click', (e)=>{
     if(e.target.id === 'birthdayModal') closeBirthdayModal();
@@ -1726,11 +2141,12 @@
     try{
       const payload = {
         type: 'calendar-backup',
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
         events: events,
         routines: routines,
-        birthdays: birthdays
+        birthdays: birthdays,
+        specials: specials
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
       const url = URL.createObjectURL(blob);
@@ -1794,9 +2210,10 @@
         const evCount = data.events ? Object.values(data.events).reduce((sum, arr)=> sum + (Array.isArray(arr)?arr.length:0), 0) : 0;
         const rtCount = Array.isArray(data.routines) ? data.routines.length : 0;
         const bdCount = Array.isArray(data.birthdays) ? data.birthdays.length : 0;
+        const spCount = Array.isArray(data.specials) ? data.specials.length : 0;
         pendingRestoreData = data;
         document.getElementById('restorePreviewText').textContent =
-          '偵測到備份檔案：一般事項 ' + evCount + ' 筆、例行事項 ' + rtCount + ' 筆、生日 ' + bdCount + ' 筆。確認回復將覆蓋目前所有資料，此動作無法復原。';
+          '偵測到備份檔案：一般事項／會議 ' + evCount + ' 筆、例行班會 ' + rtCount + ' 筆、生日 ' + bdCount + ' 筆、特殊事項 ' + spCount + ' 筆。確認回復將覆蓋目前所有資料，此動作無法復原。';
         document.getElementById('restorePreview').style.display = '';
       } catch(err){
         pendingRestoreData = null;
@@ -1813,9 +2230,11 @@
     events = (pendingRestoreData.events && typeof pendingRestoreData.events === 'object') ? pendingRestoreData.events : {};
     routines = Array.isArray(pendingRestoreData.routines) ? pendingRestoreData.routines : [];
     birthdays = Array.isArray(pendingRestoreData.birthdays) ? pendingRestoreData.birthdays : [];
+    specials = Array.isArray(pendingRestoreData.specials) ? pendingRestoreData.specials : [];
     await saveEvents();
     await saveRoutines();
     await saveBirthdays();
+    await saveSpecials();
     pendingRestoreData = null;
     document.getElementById('restorePreview').style.display = 'none';
     document.getElementById('restoreFileInput').value = '';
@@ -1823,11 +2242,460 @@
     renderPanel();
     renderRoutineList();
     renderBirthdayList();
+    renderSpecialList();
+    renderMeetingList();
     closeRestoreModal();
     showToast('已回復備份資料');
   });
 
-  Promise.all([loadRoutines(), loadBirthdays()]).then(()=> loadEvents()).then(()=>{ renderPanel(); scrollToToday(); });
+  // --- 輸入排程：類型選擇彈窗 ---
+  function openScheduleTypeModal(){
+    document.getElementById('scheduleTypeModal').classList.add('open');
+  }
+  function closeScheduleTypeModal(){
+    document.getElementById('scheduleTypeModal').classList.remove('open');
+  }
+  document.getElementById('openScheduleTypeBtn').addEventListener('click', openScheduleTypeModal);
+  document.getElementById('scheduleTypeModalClose').addEventListener('click', closeScheduleTypeModal);
+  document.getElementById('scheduleTypeModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'scheduleTypeModal') closeScheduleTypeModal();
+  });
+  document.getElementById('chooseRoutineBtn').addEventListener('click', ()=>{
+    closeScheduleTypeModal();
+    openRoutineModal();
+  });
+  document.getElementById('chooseBirthdayBtn').addEventListener('click', ()=>{
+    closeScheduleTypeModal();
+    openBirthdayModal();
+  });
+  document.getElementById('chooseMeetingBtn').addEventListener('click', ()=>{
+    closeScheduleTypeModal();
+    openMeetingModal();
+  });
+  document.getElementById('chooseSpecialBtn').addEventListener('click', ()=>{
+    closeScheduleTypeModal();
+    openSpecialModal();
+  });
+
+  // --- 會議：Y/M/D 下拉選單 ---
+  const meetingYearSelect = document.getElementById('meetingYearInput');
+  const meetingMonthSelect = document.getElementById('meetingMonthInput');
+  const meetingDaySelect = document.getElementById('meetingDayInput');
+  const meetingTypeSelect = document.getElementById('meetingTypeInput');
+  const meetingCustomNameInput = document.getElementById('meetingCustomNameInput');
+
+  function populateMeetingYearOptions(){
+    meetingYearSelect.innerHTML = '';
+    const curY = today.getFullYear();
+    for(let y = curY-2; y <= curY+10; y++){
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y + '年';
+      meetingYearSelect.appendChild(opt);
+    }
+  }
+  function populateMeetingMonthOptions(){
+    meetingMonthSelect.innerHTML = '';
+    for(let m=1; m<=12; m++){
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m + '月';
+      meetingMonthSelect.appendChild(opt);
+    }
+  }
+  function populateMeetingDayOptions(){
+    const y = Number(meetingYearSelect.value) || today.getFullYear();
+    const m = Number(meetingMonthSelect.value) || 1;
+    const dim = new Date(y, m, 0).getDate();
+    const prevVal = Number(meetingDaySelect.value) || 1;
+    meetingDaySelect.innerHTML = '';
+    for(let d=1; d<=dim; d++){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d + '日';
+      meetingDaySelect.appendChild(opt);
+    }
+    meetingDaySelect.value = Math.min(prevVal, dim);
+  }
+  populateMeetingYearOptions();
+  populateMeetingMonthOptions();
+  populateMeetingDayOptions();
+  meetingYearSelect.addEventListener('change', populateMeetingDayOptions);
+  meetingMonthSelect.addEventListener('change', populateMeetingDayOptions);
+  meetingTypeSelect.addEventListener('change', ()=>{
+    meetingCustomNameInput.style.display = (meetingTypeSelect.value === '__custom__') ? '' : 'none';
+  });
+
+  function getAllMeetingEvents(){
+    const list = [];
+    Object.keys(events).forEach(key=>{
+      (events[key]||[]).forEach(ev=>{
+        if(ev.tag === 'meeting') list.push({ key, ev });
+      });
+    });
+    list.sort((a,b)=> a.key.localeCompare(b.key));
+    return list;
+  }
+
+  function renderMeetingList(){
+    const list = document.getElementById('meetingList');
+    list.innerHTML = '';
+    const all = getAllMeetingEvents();
+    if(all.length === 0){
+      const p = document.createElement('div');
+      p.className = 'empty-note small';
+      p.textContent = '目前沒有已安排的會議，請在下方新增（例如：童蒙班會議、青少班會議）。';
+      list.appendChild(p);
+    }
+    all.forEach(({key, ev})=>{
+      const item = document.createElement('div');
+      item.className = 'routine-item meeting';
+      const info = document.createElement('div');
+      info.className = 'info';
+      const t = document.createElement('div');
+      t.className = 'title';
+      t.textContent = ev.title;
+      info.appendChild(t);
+      const d = document.createElement('div');
+      d.className = 'desc';
+      d.textContent = key + (ev.time ? '　' + ev.time : '');
+      info.appendChild(d);
+      item.appendChild(info);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '編輯';
+      editBtn.addEventListener('click', ()=> startEditMeeting(key, ev));
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del';
+      delBtn.textContent = '刪除';
+      delBtn.addEventListener('click', async ()=>{
+        events[key] = (events[key]||[]).filter(e=> e.id !== ev.id);
+        if(events[key].length===0) delete events[key];
+        await saveEvents();
+        setMeetingStatus('已刪除');
+        renderMeetingList();
+        render();
+        renderPanel();
+      });
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      item.appendChild(actions);
+
+      list.appendChild(item);
+    });
+  }
+
+  function startEditMeeting(key, ev){
+    editingMeetingId = { key, id: ev.id };
+    const [y,m,d] = key.split('-').map(Number);
+    const isPreset = (ev.title === '童蒙班會議' || ev.title === '青少班會議');
+    meetingTypeSelect.value = isPreset ? ev.title : '__custom__';
+    meetingCustomNameInput.style.display = isPreset ? 'none' : '';
+    meetingCustomNameInput.value = isPreset ? '' : ev.title;
+    meetingYearSelect.value = y;
+    meetingMonthSelect.value = m;
+    populateMeetingDayOptions();
+    meetingDaySelect.value = d;
+    document.getElementById('meetingTimeInput').value = ev.time || '20:00';
+    document.getElementById('meetingFormTitleLabel').textContent = '編輯會議';
+    document.getElementById('meetingSaveBtn').textContent = '更新';
+    document.getElementById('meetingCancelEditBtn').style.display = 'block';
+  }
+
+  function resetMeetingForm(){
+    editingMeetingId = null;
+    meetingTypeSelect.value = '童蒙班會議';
+    meetingCustomNameInput.style.display = 'none';
+    meetingCustomNameInput.value = '';
+    meetingYearSelect.value = today.getFullYear();
+    meetingMonthSelect.value = today.getMonth()+1;
+    populateMeetingDayOptions();
+    meetingDaySelect.value = today.getDate();
+    document.getElementById('meetingTimeInput').value = '20:00';
+    document.getElementById('meetingFormTitleLabel').textContent = '新增會議';
+    document.getElementById('meetingSaveBtn').textContent = '新增';
+    document.getElementById('meetingCancelEditBtn').style.display = 'none';
+  }
+
+  function setMeetingStatus(msg){
+    const el = document.getElementById('meetingStatusMsg');
+    el.textContent = msg;
+    if(msg) setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 2500);
+  }
+
+  async function saveMeetingForm(){
+    const isCustom = meetingTypeSelect.value === '__custom__';
+    const name = isCustom ? meetingCustomNameInput.value.trim() : meetingTypeSelect.value;
+    if(!name){ setMeetingStatus('請輸入會議名稱'); return; }
+    const y = Number(meetingYearSelect.value);
+    const m = Number(meetingMonthSelect.value);
+    const d = Number(meetingDaySelect.value);
+    const time = document.getElementById('meetingTimeInput').value.trim();
+    if(!y || !m || !d){ setMeetingStatus('請選擇完整的日期'); return; }
+    const newKey = fmtKey(y, m-1, d);
+
+    if(editingMeetingId){
+      const { key: oldKey, id: oldId } = editingMeetingId;
+      events[oldKey] = (events[oldKey]||[]).filter(e=> e.id !== oldId);
+      if(events[oldKey].length===0) delete events[oldKey];
+      if(!events[newKey]) events[newKey] = [];
+      events[newKey].push({ id: oldId, title: name, time: time, tag: 'meeting' });
+      setMeetingStatus('已更新');
+    } else {
+      if(!events[newKey]) events[newKey] = [];
+      events[newKey].push({ id: 'ev'+Date.now()+Math.floor(Math.random()*1000), title: name, time: time, tag: 'meeting' });
+      setMeetingStatus('已新增');
+    }
+    await saveEvents();
+    resetMeetingForm();
+    renderMeetingList();
+    render();
+    renderPanel();
+  }
+
+  function openMeetingModal(){
+    renderMeetingList();
+    resetMeetingForm();
+    document.getElementById('meetingModal').classList.add('open');
+  }
+  function closeMeetingModal(){
+    document.getElementById('meetingModal').classList.remove('open');
+    resetMeetingForm();
+  }
+  document.getElementById('meetingModalClose').addEventListener('click', closeMeetingModal);
+  document.getElementById('meetingModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'meetingModal') closeMeetingModal();
+  });
+  document.getElementById('meetingSaveBtn').addEventListener('click', saveMeetingForm);
+  document.getElementById('meetingCancelEditBtn').addEventListener('click', resetMeetingForm);
+
+  // --- 特殊事項：月／日 下拉選單 ---
+  const specialMonthSelect = document.getElementById('specialMonthInput');
+  const specialDaySelect = document.getElementById('specialDayInput');
+
+  function populateSpecialMonthOptions(){
+    specialMonthSelect.innerHTML = '';
+    for(let m=1; m<=12; m++){
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m + '月';
+      specialMonthSelect.appendChild(opt);
+    }
+  }
+  function populateSpecialDayOptions(){
+    const y = today.getFullYear();
+    const m = Number(specialMonthSelect.value) || 1;
+    const dim = new Date(y, m, 0).getDate();
+    const prevVal = Number(specialDaySelect.value) || 1;
+    specialDaySelect.innerHTML = '';
+    for(let d=1; d<=dim; d++){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d + '日';
+      specialDaySelect.appendChild(opt);
+    }
+    specialDaySelect.value = Math.min(prevVal, dim);
+  }
+  populateSpecialMonthOptions();
+  populateSpecialDayOptions();
+  specialMonthSelect.addEventListener('change', populateSpecialDayOptions);
+
+  // --- 特殊事項：頻率切換（每年一次／每月一次）---
+  const specialFreqSelect = document.getElementById('specialFreqInput');
+  const specialYearlyFields = document.getElementById('specialYearlyFields');
+  const specialMonthlyFields = document.getElementById('specialMonthlyFields');
+  const specialMonthlyDaySelect = document.getElementById('specialMonthlyDayInput');
+  const specialEndDateInput = document.getElementById('specialEndDateInput');
+
+  function populateSpecialMonthlyDayOptions(){
+    specialMonthlyDaySelect.innerHTML = '';
+    for(let d=1; d<=31; d++){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d + '日';
+      specialMonthlyDaySelect.appendChild(opt);
+    }
+  }
+  populateSpecialMonthlyDayOptions();
+
+  function updateSpecialFreqVisibility(){
+    const isMonthly = specialFreqSelect.value === 'monthly';
+    specialYearlyFields.style.display = isMonthly ? 'none' : '';
+    specialMonthlyFields.style.display = isMonthly ? '' : 'none';
+  }
+  specialFreqSelect.addEventListener('change', updateSpecialFreqVisibility);
+  updateSpecialFreqVisibility();
+
+  function describeSpecial(s){
+    const freq = s.freq || 'yearly';
+    if(freq === 'monthly'){
+      let txt = '每月' + s.day + '日・每月重複';
+      if(s.endDate) txt += '（至 ' + s.endDate + ' 止）';
+      return txt;
+    }
+    return s.month + '月' + s.day + '日・每年重複';
+  }
+
+  function renderSpecialList(){
+    const list = document.getElementById('specialList');
+    list.innerHTML = '';
+    if(specials.length === 0){
+      const p = document.createElement('div');
+      p.className = 'empty-note small';
+      p.textContent = '目前沒有特殊事項，請在下方新增（例如：結業典禮、週年慶）。';
+      list.appendChild(p);
+    }
+    specials.slice().sort((a,b)=>{
+      const fa = a.freq || 'yearly', fb = b.freq || 'yearly';
+      if(fa !== fb) return fa === 'monthly' ? 1 : -1;
+      if(fa === 'monthly') return Number(a.day) - Number(b.day);
+      return (Number(a.month)-Number(b.month)) || (Number(a.day)-Number(b.day));
+    }).forEach(s=>{
+      const item = document.createElement('div');
+      item.className = 'routine-item special';
+      const info = document.createElement('div');
+      info.className = 'info';
+      const t = document.createElement('div');
+      t.className = 'title';
+      t.textContent = '⭐' + s.name;
+      info.appendChild(t);
+      const d = document.createElement('div');
+      d.className = 'desc';
+      d.textContent = describeSpecial(s);
+      info.appendChild(d);
+      item.appendChild(info);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '編輯';
+      editBtn.addEventListener('click', ()=> startEditSpecial(s));
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del';
+      delBtn.textContent = '刪除';
+      delBtn.addEventListener('click', ()=> deleteSpecial(s.id));
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+      item.appendChild(actions);
+
+      list.appendChild(item);
+    });
+  }
+
+  function startEditSpecial(s){
+    editingSpecialId = s.id;
+    const freq = s.freq || 'yearly';
+    document.getElementById('specialNameInput').value = s.name;
+    specialFreqSelect.value = freq;
+    updateSpecialFreqVisibility();
+    if(freq === 'monthly'){
+      specialMonthlyDaySelect.value = s.day;
+      specialEndDateInput.value = s.endDate || '';
+    } else {
+      specialMonthSelect.value = s.month;
+      populateSpecialDayOptions();
+      specialDaySelect.value = s.day;
+    }
+    document.getElementById('specialFormTitleLabel').textContent = '編輯特殊事項';
+    document.getElementById('specialSaveBtn').textContent = '更新';
+    document.getElementById('specialCancelEditBtn').style.display = 'block';
+    document.getElementById('specialNameInput').focus();
+  }
+
+  function resetSpecialForm(){
+    editingSpecialId = null;
+    document.getElementById('specialNameInput').value = '';
+    specialFreqSelect.value = 'yearly';
+    updateSpecialFreqVisibility();
+    specialMonthSelect.value = today.getMonth()+1;
+    populateSpecialDayOptions();
+    specialDaySelect.value = today.getDate();
+    specialMonthlyDaySelect.value = Math.min(today.getDate(), 31);
+    specialEndDateInput.value = '';
+    document.getElementById('specialFormTitleLabel').textContent = '新增特殊事項';
+    document.getElementById('specialSaveBtn').textContent = '新增';
+    document.getElementById('specialCancelEditBtn').style.display = 'none';
+  }
+
+  function setSpecialStatus(msg){
+    const el = document.getElementById('specialStatusMsg');
+    el.textContent = msg;
+    if(msg) setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 2500);
+  }
+
+  async function saveSpecialForm(){
+    const name = document.getElementById('specialNameInput').value.trim();
+    if(!name){ setSpecialStatus('請輸入事項名稱'); return; }
+    const freq = specialFreqSelect.value === 'monthly' ? 'monthly' : 'yearly';
+
+    let month = null, day, endDate = null;
+    if(freq === 'monthly'){
+      day = Number(specialMonthlyDaySelect.value);
+      if(!day){ setSpecialStatus('請選擇日期'); return; }
+      endDate = specialEndDateInput.value || null;
+    } else {
+      month = Number(specialMonthSelect.value);
+      day = Number(specialDaySelect.value);
+      if(!month || !day){ setSpecialStatus('請選擇完整的日期'); return; }
+    }
+
+    if(editingSpecialId){
+      const idx = specials.findIndex(s=>s.id===editingSpecialId);
+      if(idx>-1){
+        const prev = specials[idx];
+        specials[idx] = {id: editingSpecialId, name, freq, month, day, endDate, tag:'special', exceptions: prev.exceptions || []};
+      }
+      setSpecialStatus('已更新');
+    } else {
+      specials.push({id: 'sp'+Date.now()+Math.floor(Math.random()*1000), name, freq, month, day, endDate, tag:'special', exceptions: []});
+      setSpecialStatus('已新增');
+    }
+    await saveSpecials();
+    resetSpecialForm();
+    renderSpecialList();
+    render();
+    renderPanel();
+  }
+
+  async function deleteSpecial(id){
+    specials = specials.filter(s=>s.id!==id);
+    await saveSpecials();
+    if(editingSpecialId === id) resetSpecialForm();
+    setSpecialStatus('已刪除');
+    renderSpecialList();
+    render();
+    renderPanel();
+  }
+
+  async function skipSpecialOccurrence(specialId, dateKey){
+    const s = specials.find(s=>s.id===specialId);
+    if(!s) return;
+    if(!s.exceptions) s.exceptions = [];
+    if(!s.exceptions.includes(dateKey)) s.exceptions.push(dateKey);
+    await saveSpecials();
+    setStatus('已略過這次');
+    render();
+    renderPanel();
+  }
+
+  function openSpecialModal(highlightId){
+    renderSpecialList();
+    if(highlightId){
+      const s = specials.find(s=>s.id===highlightId);
+      if(s) startEditSpecial(s);
+    } else {
+      resetSpecialForm();
+    }
+    document.getElementById('specialModal').classList.add('open');
+  }
+  function closeSpecialModal(){
+    document.getElementById('specialModal').classList.remove('open');
+    resetSpecialForm();
+  }
+  document.getElementById('specialModalClose').addEventListener('click', closeSpecialModal);
+  document.getElementById('specialModal').addEventListener('click', (e)=>{
+    if(e.target.id === 'specialModal') closeSpecialModal();
+  });
+  document.getElementById('specialSaveBtn').addEventListener('click', saveSpecialForm);
+  document.getElementById('specialCancelEditBtn').addEventListener('click', resetSpecialForm);
+
+  Promise.all([loadRoutines(), loadBirthdays(), loadSpecials()]).then(()=> loadEvents()).then(()=>{ renderPanel(); scrollToToday(); });
 })();
 </script>
 </body>
