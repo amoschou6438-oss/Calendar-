@@ -534,6 +534,37 @@
   }
   .routine-btn:hover{ background: rgba(201,169,97,0.1); }
 
+  .func-toggle{
+    display:inline-flex;
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .func-toggle-btn{
+    border: none;
+    background: transparent;
+    color: var(--gold-dim);
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    white-space: nowrap;
+    transition: background .15s ease, color .15s ease;
+  }
+  .func-toggle-btn:hover{ color: var(--gold); }
+  .func-toggle-btn.active{
+    background: var(--gold);
+    color: #1b2b29;
+    font-weight: 600;
+  }
+
   .badge-routine{
     display:inline-block;
     font-size: 10px;
@@ -606,6 +637,21 @@
     overflow-y: auto;
   }
   .modal-overlay.open{ display:flex; }
+  #scheduleTypeModal, #restoreModal{
+    align-items: center;
+    padding-top: 96px;
+  }
+  .func-slide.above-modal{
+    position: fixed !important;
+    top: 14px;
+    left: 50%;
+    margin: 0 !important;
+    transform: translateX(-50%) !important;
+    z-index: 999;
+    max-height: none !important;
+    opacity: 1 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  }
   .modal{
     background: var(--panel);
     border: 1px solid var(--panel-line);
@@ -718,9 +764,11 @@
       <button class="routine-btn" id="toggleFuncBtn">顯示功能</button>
     </div>
     <div class="func-slide" id="funcBtnGroup">
-      <button class="routine-btn" id="openScheduleTypeBtn">📋 輸入排程</button>
-      <button class="routine-btn" id="exportBackupBtn">💾 備份</button>
-      <button class="routine-btn" id="openRestoreBtn">📀 回復</button>
+      <div class="func-toggle">
+        <button class="func-toggle-btn" id="openScheduleTypeBtn">📋 排程輸入</button>
+        <button class="func-toggle-btn" id="exportBackupBtn">💾 排程備份</button>
+        <button class="func-toggle-btn" id="openRestoreBtn">📀 排程回復</button>
+      </div>
     </div>
   </div>
 
@@ -1931,6 +1979,14 @@
     render();
   });
 
+  // --- 排程輸入／排程備份／排程回復：點選時該按鈕變金色 ---
+  document.querySelectorAll('.func-toggle .func-toggle-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.func-toggle .func-toggle-btn').forEach(b=> b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
   // --- 浮動新增按鈕：不管目前是否顯示該日，都能直接新增事項（預設今天，可於彈窗內改日期） ---
   function openFabAdd(){
     selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
@@ -2192,6 +2248,8 @@
   }
 
   function exportBackup(){
+    closeScheduleTypeModal();
+    closeRestoreModal();
     try{
       const payload = {
         type: 'calendar-backup',
@@ -2229,15 +2287,20 @@
   }
 
   function openRestoreModal(){
+    closeScheduleTypeModal();
     pendingRestoreData = null;
     document.getElementById('restorePreview').style.display = 'none';
     document.getElementById('restoreFileInput').value = '';
     setRestoreStatus('');
     document.getElementById('restoreModal').classList.add('open');
+    const ft = document.getElementById('funcBtnGroup');
+    if(ft) ft.classList.add('above-modal');
   }
   function closeRestoreModal(){
     document.getElementById('restoreModal').classList.remove('open');
     pendingRestoreData = null;
+    const ft = document.getElementById('funcBtnGroup');
+    if(ft) ft.classList.remove('above-modal');
   }
 
   document.getElementById('openRestoreBtn').addEventListener('click', openRestoreModal);
@@ -2304,10 +2367,15 @@
 
   // --- 輸入排程：類型選擇彈窗 ---
   function openScheduleTypeModal(){
+    closeRestoreModal();
     document.getElementById('scheduleTypeModal').classList.add('open');
+    const ft = document.getElementById('funcBtnGroup');
+    if(ft) ft.classList.add('above-modal');
   }
   function closeScheduleTypeModal(){
     document.getElementById('scheduleTypeModal').classList.remove('open');
+    const ft = document.getElementById('funcBtnGroup');
+    if(ft) ft.classList.remove('above-modal');
   }
   document.getElementById('openScheduleTypeBtn').addEventListener('click', openScheduleTypeModal);
   document.getElementById('scheduleTypeModalClose').addEventListener('click', closeScheduleTypeModal);
