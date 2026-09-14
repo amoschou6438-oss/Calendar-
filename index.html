@@ -165,15 +165,37 @@
     flex-direction: column;
     gap: 10px;
   }
-  .schedule-view-toggle{
-    text-align: center;
-    color: var(--gold);
-    font-size: 13px;
+  .view-toggle{
+    display:flex;
+    justify-content:center;
     padding: 2px 0 14px;
+  }
+  .view-toggle-inner{
+    display:inline-flex;
+    background: var(--panel-2);
+    border: 1px solid var(--panel-line);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .view-toggle-btn{
+    border: none;
+    background: transparent;
+    color: var(--gold-dim);
+    font-size: 13px;
+    font-family: inherit;
+    padding: 6px 22px;
+    border-radius: 999px;
     cursor: pointer;
     user-select: none;
+    transition: background .15s ease, color .15s ease;
   }
-  .schedule-view-toggle:hover{ text-decoration: underline; }
+  .view-toggle-btn:hover{ color: var(--gold); }
+  .view-toggle-btn.active{
+    background: var(--gold);
+    color: #1b2b29;
+    font-weight: 600;
+  }
   .day-row{
     display:flex;
     align-items:flex-start;
@@ -704,7 +726,12 @@
 
   <div class="layout">
     <div>
-      <div class="schedule-view-toggle" id="scheduleViewToggle">切換到當月日曆</div>
+      <div class="view-toggle">
+        <div class="view-toggle-inner">
+          <button type="button" class="view-toggle-btn" id="viewToggleCalendarBtn">月曆</button>
+          <button type="button" class="view-toggle-btn" id="viewToggleScheduleBtn">排程</button>
+        </div>
+      </div>
       <div class="day-list" id="dayGrid"></div>
     </div>
   </div>
@@ -1888,10 +1915,18 @@
 
   // --- 顯示當月排程（只顯示有安排）／ 顯示當月日曆（顯示全部日期）切換 ---
   function updateScheduleViewToggleLabel(){
-    document.getElementById('scheduleViewToggle').textContent = onlyScheduled ? '切換到當月日曆' : '切換到當月排程';
+    document.getElementById('viewToggleCalendarBtn').classList.toggle('active', !onlyScheduled);
+    document.getElementById('viewToggleScheduleBtn').classList.toggle('active', onlyScheduled);
   }
-  document.getElementById('scheduleViewToggle').addEventListener('click', ()=>{
-    onlyScheduled = !onlyScheduled;
+  document.getElementById('viewToggleCalendarBtn').addEventListener('click', ()=>{
+    if(!onlyScheduled) return;
+    onlyScheduled = false;
+    updateScheduleViewToggleLabel();
+    render();
+  });
+  document.getElementById('viewToggleScheduleBtn').addEventListener('click', ()=>{
+    if(onlyScheduled) return;
+    onlyScheduled = true;
     updateScheduleViewToggleLabel();
     render();
   });
