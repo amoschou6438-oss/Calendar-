@@ -348,6 +348,8 @@
     transition: transform 0.15s;
   }
   .fab-add-btn:hover{ transform: scale(1.06); }
+  .fab-secondary#fabTodayBtn{ bottom: 90px; }
+  .fab-secondary#fabTopBtn{ bottom: 154px; }
   .jump-date{
     display:flex;
     align-items:center;
@@ -828,6 +830,8 @@
   </div>
 </div>
 
+<button class="fab-add-btn fab-secondary" id="fabTopBtn" title="回到最上面" aria-label="回到最上面">🔝</button>
+<button class="fab-add-btn fab-secondary" id="fabTodayBtn" title="跳到今天" aria-label="跳到今天">🗓️</button>
 <button class="fab-add-btn" id="fabAddBtn" title="新增事項" aria-label="新增事項">＋</button>
 
 <div class="modal-overlay" id="routineModal">
@@ -1967,10 +1971,18 @@
     document.getElementById('viewToggleScheduleBtn').classList.toggle('active', onlyScheduled);
   }
   document.getElementById('viewToggleCalendarBtn').addEventListener('click', ()=>{
-    if(!onlyScheduled) return;
+    if(!onlyScheduled){
+      scrollToToday();
+      return;
+    }
     onlyScheduled = false;
+    viewYear = today.getFullYear();
+    viewMonth = today.getMonth();
+    selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
     updateScheduleViewToggleLabel();
     render();
+    renderPanel();
+    scrollToToday();
   });
   document.getElementById('viewToggleScheduleBtn').addEventListener('click', ()=>{
     if(onlyScheduled) return;
@@ -2001,6 +2013,19 @@
     showForm();
   }
   document.getElementById('fabAddBtn').addEventListener('click', openFabAdd);
+
+  document.getElementById('fabTopBtn').addEventListener('click', ()=>{
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('fabTodayBtn').addEventListener('click', ()=>{
+    viewYear = today.getFullYear();
+    viewMonth = today.getMonth();
+    selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
+    render();
+    renderPanel();
+    scrollToToday();
+  });
 
   document.getElementById('prevBtn').addEventListener('click', ()=>{
     viewMonth--;
@@ -2817,7 +2842,43 @@
   document.getElementById('specialSaveBtn').addEventListener('click', saveSpecialForm);
   document.getElementById('specialCancelEditBtn').addEventListener('click', resetSpecialForm);
 
-  Promise.all([loadRoutines(), loadBirthdays(), loadSpecials()]).then(()=> loadEvents()).then(()=>{ renderPanel(); scrollToToday(); });
+  // --- 供「備份與恢復控制台」呼叫的網址參數自動觸發機制 ---
+  function getAutoAction(){
+    try{
+      const params = new URLSearchParams(location.search);
+      if(params.get('autobackup') === '1') return 'autobackup';
+      if(params.get('autorestore') === '1') return 'autorestore';
+    } catch(e){}
+    return null;
+  }
+
+  function runAutoBackup(){
+    exportBackup();
+    setTimeout(()=>{ try{ window.close(); }catch(e){} }, 1200);
+  }
+
+  function runAutoRestore(){
+    openRestoreModal();
+    const fileInput = document.getElementById('restoreFileInput');
+    const onPicked = () => {
+      // 等現有的 change 監聽器完成解析並填入 pendingRestoreData 後，自動按下確認回復
+      setTimeout(()=>{
+        if(pendingRestoreData){
+          document.getElementById('confirmRestoreBtn').click();
+          setTimeout(()=>{ try{ window.close(); }catch(e){} }, 1000);
+        }
+      }, 300);
+    };
+    fileInput.addEventListener('change', onPicked, { once:true });
+    fileInput.click();
+  }
+
+  Promise.all([loadRoutines(), loadBirthdays(), loadSpecials()]).then(()=> loadEvents()).then(()=>{
+    renderPanel(); scrollToToday();
+    const action = getAutoAction();
+    if(action === 'autobackup') runAutoBackup();
+    else if(action === 'autorestore') runAutoRestore();
+  });
 })();
 </script>
 </body>
