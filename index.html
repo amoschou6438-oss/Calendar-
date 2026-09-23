@@ -34,24 +34,32 @@
     background: var(--bg);
     color: var(--cream);
     font-family: 'Noto Sans TC', sans-serif;
+    height: 100%;
+    overflow: hidden;
   }
   .wrap{
     max-width: 920px;
     margin: 0 auto;
-    padding: 40px 22px 80px;
+    padding: 24px 22px 12px;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   @media (max-width: 720px){
-    .wrap{ padding: 20px 12px 60px; }
+    .wrap{ padding: 14px 12px 8px; }
   }
   .masthead{
     display:flex;
     justify-content:center;
     align-items:flex-end;
     border-bottom: 1px solid var(--panel-line);
-    padding-bottom: 18px;
-    margin-bottom: 26px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
     gap: 14px;
+    flex-shrink: 0;
   }
   .masthead-title{
     display:flex;
@@ -95,7 +103,8 @@
     display:flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
   }
   .nav-left{ display:flex; align-items:center; justify-content: center; gap:10px; flex-wrap: wrap; }
   .func-slide{
@@ -154,21 +163,34 @@
   .today-btn:hover{ background: rgba(201,169,97,0.1); }
 
   .layout{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    align-items: start;
+    display:flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 0;
+  }
+  .layout > div{
+    display:flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .day-list{
     display:flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
   }
   .view-toggle{
     display:flex;
     justify-content:center;
-    padding: 2px 0 14px;
+    padding: 2px 0 10px;
+    flex-shrink: 0;
   }
   .view-toggle-inner{
     display:inline-flex;
@@ -258,6 +280,7 @@
 
   .day-events{
     flex: 1;
+    min-width: 0;
     display:flex;
     flex-direction: column;
     align-items:flex-start;
@@ -291,20 +314,23 @@
 
   .chip{
     display:inline-flex;
-    align-items:center;
+    align-items:flex-start;
     gap: 5px;
     font-size: 11.5px;
-    line-height: 1.3;
-    padding: 4px 10px 4px 8px;
-    border-radius: 999px;
+    line-height: 1.4;
+    padding: 5px 10px 5px 8px;
+    border-radius: 14px;
     background: rgba(201,169,97,0.13);
     border: 1px solid rgba(201,169,97,0.35);
     color: var(--cream);
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
   }
   .chip::before{
     content:'';
     width:6px; height:6px;
+    margin-top: 5px;
     border-radius:50%;
     background: var(--gold);
     flex-shrink:0;
@@ -330,9 +356,6 @@
   }
   .chip.special::before{ background: var(--green); }
   .fab-add-btn{
-    position: fixed;
-    right: 22px;
-    bottom: 26px;
     width: 54px;
     height: 54px;
     border-radius: 50%;
@@ -344,12 +367,40 @@
     line-height: 1;
     cursor: pointer;
     box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-    z-index: 40;
-    transition: transform 0.15s;
   }
-  .fab-add-btn:hover{ transform: scale(1.06); }
-  .fab-secondary#fabTodayBtn{ bottom: 90px; }
-  .fab-secondary#fabTopBtn{ bottom: 154px; }
+  .fab-stack{
+    position: fixed;
+    right: 22px;
+    bottom: 26px;
+    z-index: 40;
+    width: 54px;
+    height: 54px;
+  }
+  .fab-stack .fab-add-btn{
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    transition: transform 0.25s ease, opacity 0.2s ease, visibility 0.25s;
+  }
+  .fab-stack .fab-main{
+    z-index: 2;
+  }
+  .fab-stack .fab-sub{
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(0) scale(0.7);
+  }
+  .fab-stack.open .fab-sub{
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+  .fab-stack.open #fabAddBtn{ transform: translateY(-64px) scale(1); }
+  .fab-stack.open #fabTodayBtn{ transform: translateY(-128px) scale(1); }
+  .fab-stack.open #fabTopBtn{ transform: translateY(-192px) scale(1); }
+  .fab-add-btn:hover{ filter: brightness(1.06); }
   .jump-date{
     display:flex;
     align-items:center;
@@ -853,9 +904,12 @@
   </div>
 </div>
 
-<button class="fab-add-btn fab-secondary" id="fabTopBtn" title="回到最上面" aria-label="回到最上面">🔝</button>
-<button class="fab-add-btn fab-secondary" id="fabTodayBtn" title="跳到今天" aria-label="跳到今天">🗓️</button>
-<button class="fab-add-btn" id="fabAddBtn" title="新增事項" aria-label="新增事項">＋</button>
+<div class="fab-stack" id="fabStack">
+  <button class="fab-add-btn fab-sub" id="fabTopBtn" title="回到最上面" aria-label="回到最上面">🔝</button>
+  <button class="fab-add-btn fab-sub" id="fabTodayBtn" title="跳到今天" aria-label="跳到今天">🗓️</button>
+  <button class="fab-add-btn fab-sub" id="fabAddBtn" title="新增事項" aria-label="新增事項">＋</button>
+  <button class="fab-add-btn fab-main" id="fabMenuBtn" title="更多功能" aria-label="更多功能">📂</button>
+</div>
 
 <div class="modal-overlay" id="routineModal">
   <div class="modal">
@@ -2144,19 +2198,41 @@
     resetForm();
     showForm();
   }
-  document.getElementById('fabAddBtn').addEventListener('click', openScheduleTypeModal);
+  document.getElementById('fabAddBtn').addEventListener('click', ()=>{
+    closeFabStack();
+    openScheduleTypeModal();
+  });
 
   document.getElementById('fabTopBtn').addEventListener('click', ()=>{
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeFabStack();
+    const grid = document.getElementById('dayGrid');
+    if(grid) grid.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   document.getElementById('fabTodayBtn').addEventListener('click', ()=>{
+    closeFabStack();
     viewYear = today.getFullYear();
     viewMonth = today.getMonth();
     selectedKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
     render();
     renderPanel();
     scrollToToday();
+  });
+
+  const fabStackEl = document.getElementById('fabStack');
+  const fabMenuBtnEl = document.getElementById('fabMenuBtn');
+  function closeFabStack(){
+    fabStackEl.classList.remove('open');
+    fabMenuBtnEl.textContent = '📂';
+  }
+  fabMenuBtnEl.addEventListener('click', ()=>{
+    const isOpen = fabStackEl.classList.toggle('open');
+    fabMenuBtnEl.textContent = isOpen ? '📁' : '📂';
+  });
+  document.addEventListener('click', (e)=>{
+    if(fabStackEl.classList.contains('open') && !fabStackEl.contains(e.target)){
+      closeFabStack();
+    }
   });
 
   document.getElementById('prevBtn').addEventListener('click', ()=>{
