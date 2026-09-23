@@ -607,6 +607,18 @@
     margin-left: 6px;
     vertical-align: middle;
   }
+  .badge-tag{
+    display:inline-block;
+    font-size: 10px;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+  .badge-tag-gold{ color: var(--gold); border: 1px solid var(--gold-dim); }
+  .badge-tag-red{ color: var(--red); border: 1px solid var(--red); }
+  .badge-tag-birthday{ color: var(--purple); border: 1px solid var(--purple-dim); }
   .toast{
     position: fixed;
     top: 18px;
@@ -811,10 +823,21 @@
 
     <div class="form" id="formArea" style="display:none;">
       <div id="formTitleLabel" style="font-size:12.5px; color:var(--muted); margin-bottom:6px;">新增事項</div>
-      <label>項目名稱</label>
+      <label id="titleInputLabel">項目名稱</label>
       <input type="text" id="titleInput" placeholder="例如：童蒙班">
-      <label>時間（選填）</label>
-      <input type="text" id="timeInput" placeholder="例如：10:00">
+      <div id="timeFieldWrap">
+        <label>時間（選填）</label>
+        <input type="text" id="timeInput" placeholder="例如：10:00">
+      </div>
+      <div id="quickBirthdayFieldWrap" style="display:none;">
+        <label>出生日期（西元年／月／日）</label>
+        <div class="inline-fields">
+          <div><select id="quickBdayYear"></select></div>
+          <div><select id="quickBdayMonth"></select></div>
+          <div><select id="quickBdayDay"></select></div>
+        </div>
+        <div class="status" id="quickBdayAgePreview" style="margin-top:6px;"></div>
+      </div>
       <label>類別</label>
       <div class="tag-choice">
         <label><input type="radio" name="tag" value="gold" checked> 例行班務</label>
@@ -1583,6 +1606,22 @@
         badge.textContent = '年度';
         t.appendChild(badge);
       }
+      // 手動新增的事項（非例行／生日／會議／特殊自動展開項目）：加上類別文字標籤，
+      // 避免只靠左側 3px 色條區分，導致視覺上「看起來都一樣」。
+      if(!ev.isRoutine && !ev.isBirthday && !ev.isSpecial && ev.tag !== 'meeting'){
+        const badge = document.createElement('span');
+        if(ev.tag === 'red'){
+          badge.className = 'badge-tag badge-tag-red';
+          badge.textContent = '重要';
+        } else if(ev.tag === 'birthday'){
+          badge.className = 'badge-tag badge-tag-birthday';
+          badge.textContent = '生日';
+        } else {
+          badge.className = 'badge-tag badge-tag-gold';
+          badge.textContent = '例行';
+        }
+        t.appendChild(badge);
+      }
       info.appendChild(t);
       if(ev.time){
         const tm = document.createElement('div');
@@ -1650,6 +1689,71 @@
     document.getElementById('addToggleBtn').style.display = '';
   }
 
+  // --- 快速新增表單中的「生日」出生日期下拉選單 ---
+  const quickBdayYearSelect = document.getElementById('quickBdayYear');
+  const quickBdayMonthSelect = document.getElementById('quickBdayMonth');
+  const quickBdayDaySelect = document.getElementById('quickBdayDay');
+
+  function populateQuickBdayYearOptions(){
+    quickBdayYearSelect.innerHTML = '';
+    const curY = today.getFullYear();
+    for(let y = curY; y >= curY - 120; y--){
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y + '年';
+      quickBdayYearSelect.appendChild(opt);
+    }
+  }
+  function populateQuickBdayMonthOptions(){
+    quickBdayMonthSelect.innerHTML = '';
+    for(let m=1; m<=12; m++){
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m + '月';
+      quickBdayMonthSelect.appendChild(opt);
+    }
+  }
+  function populateQuickBdayDayOptions(){
+    const y = Number(quickBdayYearSelect.value) || today.getFullYear();
+    const m = Number(quickBdayMonthSelect.value) || 1;
+    const dim = new Date(y, m, 0).getDate();
+    const prevVal = Number(quickBdayDaySelect.value) || 1;
+    quickBdayDaySelect.innerHTML = '';
+    for(let d=1; d<=dim; d++){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d + '日';
+      quickBdayDaySelect.appendChild(opt);
+    }
+    quickBdayDaySelect.value = Math.min(prevVal, dim);
+  }
+  populateQuickBdayYearOptions();
+  populateQuickBdayMonthOptions();
+  populateQuickBdayDayOptions();
+
+  function updateQuickBdayAgePreview(){
+    const y = Number(quickBdayYearSelect.value);
+    const el = document.getElementById('quickBdayAgePreview');
+    if(!el) return;
+    if(!y){ el.textContent = ''; return; }
+    const age = today.getFullYear() - y;
+    el.textContent = '今年（' + today.getFullYear() + '年）滿 ' + age + ' 歲';
+  }
+  quickBdayYearSelect.addEventListener('change', ()=>{ populateQuickBdayDayOptions(); updateQuickBdayAgePreview(); });
+  quickBdayMonthSelect.addEventListener('change', ()=>{ populateQuickBdayDayOptions(); updateQuickBdayAgePreview(); });
+  quickBdayDaySelect.addEventListener('change', updateQuickBdayAgePreview);
+
+  // 依所選類別切換表單欄位：選「生日」時改問出生年月日，其餘類別則顯示時間欄位。
+  // 編輯既有事項（非生日清單）時，維持原本的時間欄位，不切換成生日欄位。
+  function updateFormFieldsForTag(){
+    const tag = document.querySelector('input[name=tag]:checked').value;
+    const showBirthdayFields = (tag === 'birthday') && !editingId;
+    document.getElementById('quickBirthdayFieldWrap').style.display = showBirthdayFields ? '' : 'none';
+    document.getElementById('timeFieldWrap').style.display = showBirthdayFields ? 'none' : '';
+    document.getElementById('titleInputLabel').textContent = showBirthdayFields ? '姓名' : '項目名稱';
+    document.getElementById('titleInput').placeholder = showBirthdayFields ? '例如：陳小美' : '例如：童蒙班';
+  }
+  document.querySelectorAll('input[name=tag]').forEach(r=>{
+    r.addEventListener('change', updateFormFieldsForTag);
+  });
+
   function startEdit(ev){
     editingId = ev.id;
     document.getElementById('titleInput').value = ev.title;
@@ -1657,6 +1761,7 @@
     document.querySelector('input[name=tag][value="'+ev.tag+'"]').checked = true;
     document.getElementById('formTitleLabel').textContent = '編輯事項';
     document.getElementById('saveBtn').textContent = '更新';
+    updateFormFieldsForTag();
     showForm();
   }
 
@@ -1667,6 +1772,16 @@
     document.querySelector('input[name=tag][value="gold"]').checked = true;
     document.getElementById('formTitleLabel').textContent = '新增事項';
     document.getElementById('saveBtn').textContent = '新增';
+    // 生日日期欄位預設帶入目前選取日期的月／日，年份預設為今年（使用者可自行改成實際出生年）
+    if(selectedKey){
+      const parts = selectedKey.split('-').map(Number);
+      quickBdayYearSelect.value = today.getFullYear();
+      quickBdayMonthSelect.value = parts[1];
+      populateQuickBdayDayOptions();
+      quickBdayDaySelect.value = parts[2];
+      updateQuickBdayAgePreview();
+    }
+    updateFormFieldsForTag();
     hideForm();
   }
 
@@ -1682,9 +1797,26 @@
 
   async function saveForm(){
     const title = document.getElementById('titleInput').value.trim();
+    const tag = document.querySelector('input[name=tag]:checked').value;
+
+    // 新增（非編輯）且選擇「生日」類別時：改存進生日清單，讓程式依出生年月日
+    // 每年自動展開並計算年齡，與「🎂 生日」管理畫面共用同一套資料與邏輯。
+    if(tag === 'birthday' && !editingId){
+      if(!title){ setStatus('請輸入姓名'); return; }
+      const y = Number(quickBdayYearSelect.value);
+      const m = Number(quickBdayMonthSelect.value);
+      const d = Number(quickBdayDaySelect.value);
+      if(!y || !m || !d){ setStatus('請選擇完整的出生日期'); return; }
+      birthdays.push({id: 'b'+Date.now()+Math.floor(Math.random()*1000), name: title, year: y, month: m, day: d, tag:'birthday', exceptions: []});
+      await saveBirthdays();
+      setStatus('已新增生日');
+      render();
+      renderPanel();
+      return;
+    }
+
     if(!title){ setStatus('請輸入項目名稱'); return; }
     const time = document.getElementById('timeInput').value.trim();
-    const tag = document.querySelector('input[name=tag]:checked').value;
 
     if(!events[selectedKey]) events[selectedKey] = [];
 
@@ -2012,7 +2144,7 @@
     resetForm();
     showForm();
   }
-  document.getElementById('fabAddBtn').addEventListener('click', openFabAdd);
+  document.getElementById('fabAddBtn').addEventListener('click', openScheduleTypeModal);
 
   document.getElementById('fabTopBtn').addEventListener('click', ()=>{
     window.scrollTo({ top: 0, behavior: 'smooth' });
