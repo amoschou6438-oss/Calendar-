@@ -34,32 +34,24 @@
     background: var(--bg);
     color: var(--cream);
     font-family: 'Noto Sans TC', sans-serif;
-    height: 100%;
-    overflow: hidden;
   }
   .wrap{
     max-width: 920px;
     margin: 0 auto;
-    padding: 24px 22px 12px;
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    padding: 40px 22px 80px;
   }
   @media (max-width: 720px){
-    .wrap{ padding: 14px 12px 8px; }
+    .wrap{ padding: 20px 12px 60px; }
   }
   .masthead{
     display:flex;
     justify-content:center;
     align-items:flex-end;
     border-bottom: 1px solid var(--panel-line);
-    padding-bottom: 12px;
-    margin-bottom: 14px;
+    padding-bottom: 18px;
+    margin-bottom: 26px;
     flex-wrap: wrap;
     gap: 14px;
-    flex-shrink: 0;
   }
   .masthead-title{
     display:flex;
@@ -103,8 +95,7 @@
     display:flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 10px;
-    flex-shrink: 0;
+    margin-bottom: 18px;
   }
   .nav-left{ display:flex; align-items:center; justify-content: center; gap:10px; flex-wrap: wrap; }
   .func-slide{
@@ -163,34 +154,21 @@
   .today-btn:hover{ background: rgba(201,169,97,0.1); }
 
   .layout{
-    display:flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    gap: 0;
-  }
-  .layout > div{
-    display:flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: start;
   }
 
   .day-list{
     display:flex;
     flex-direction: column;
-    gap: 8px;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding-bottom: 16px;
-    -webkit-overflow-scrolling: touch;
+    gap: 10px;
   }
   .view-toggle{
     display:flex;
     justify-content:center;
-    padding: 2px 0 10px;
-    flex-shrink: 0;
+    padding: 2px 0 14px;
   }
   .view-toggle-inner{
     display:inline-flex;
@@ -2205,8 +2183,7 @@
 
   document.getElementById('fabTopBtn').addEventListener('click', ()=>{
     closeFabStack();
-    const grid = document.getElementById('dayGrid');
-    if(grid) grid.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   document.getElementById('fabTodayBtn').addEventListener('click', ()=>{
