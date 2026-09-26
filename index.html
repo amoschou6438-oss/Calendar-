@@ -2076,7 +2076,10 @@
 
   document.getElementById('saveBtn').addEventListener('click', saveForm);
   document.getElementById('cancelEditBtn').addEventListener('click', ()=>{ resetForm(); });
-  document.getElementById('addToggleBtn').addEventListener('click', ()=>{ resetForm(); showForm(); });
+  document.getElementById('addToggleBtn').addEventListener('click', ()=>{
+    closeDayModal();
+    openScheduleTypeModal();
+  });
 
   // --- 跳至日期（彈窗內快速切換） ---
   const jumpYearSelect = document.getElementById('jumpYearInput');
